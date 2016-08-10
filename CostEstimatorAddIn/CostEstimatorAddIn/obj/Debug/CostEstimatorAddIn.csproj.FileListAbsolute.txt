@@ -1,0 +1,10 @@
+C:\Users\issacg\Documents\GitHub\CostEstimator\CostEstimatorAddIn\CostEstimatorAddIn\obj\Debug\CostEstimatorAddIn.csprojResolveAssemblyReference.cache
+C:\Users\issacg\Documents\GitHub\CostEstimator\CostEstimatorAddIn\CostEstimatorAddIn\bin\Debug\CostEstimatorAddIn.dll
+C:\Users\issacg\Documents\GitHub\CostEstimator\CostEstimatorAddIn\CostEstimatorAddIn\bin\Debug\CostEstimatorAddIn.pdb
+C:\Users\issacg\Documents\GitHub\CostEstimator\CostEstimatorAddIn\CostEstimatorAddIn\obj\Debug\CostEstimatorAddIn.dll
+C:\Users\issacg\Documents\GitHub\CostEstimator\CostEstimatorAddIn\CostEstimatorAddIn\obj\Debug\CostEstimatorAddIn.pdb
+C:\Users\issacg\Documents\GitHub\CostEstimator\CostEstimatorAddIn\CostEstimatorAddIn\obj\Debug\CostEstimatorAddIn.DockableWindowCE.resources
+C:\Users\issacg\Documents\GitHub\CostEstimator\CostEstimatorAddIn\CostEstimatorAddIn\obj\Debug\CostEstimatorAddIn.csproj.GenerateResource.Cache
+C:\Users\issacg\Documents\GitHub\CostEstimator\CostEstimatorAddIn\CostEstimatorAddIn\bin\Debug\System.Data.SQLite.dll
+C:\Users\issacg\Documents\GitHub\CostEstimator\CostEstimatorAddIn\CostEstimatorAddIn\bin\Debug\CEPython.tbx
+C:\Users\issacg\Documents\GitHub\CostEstimator\CostEstimatorAddIn\CostEstimatorAddIn\bin\Debug\CostEstimatorAddIn.esriAddIn

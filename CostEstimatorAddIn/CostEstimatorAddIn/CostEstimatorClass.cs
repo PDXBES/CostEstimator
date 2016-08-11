@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Data.SQLite;
 using System.Windows.Forms;
+using System.Data;
 
 namespace CostEstimatorAddIn
 {
@@ -124,7 +125,7 @@ namespace CostEstimatorAddIn
             double lateralTrenchWidth = 4; //feet
             double lateralShoringLength = 10; //feet
             double boreJackArea = 460; //square feet
-            double boreJackDepth = 1;
+            double boreJackDepth = 25;//feet
             double fractionalFlow = 0.2; //things per thing
             double Kn = 1.486; //
             double manningsN = 0.013; //general assumption
@@ -207,6 +208,8 @@ namespace CostEstimatorAddIn
             nqsqlite(AMStudio_CostEstimator_Queries.setBaseCIPPRepairTime(workingHoursPerDay, CIPPRepairDays), CostEstimateConnection);
             nqsqlite(AMStudio_CostEstimator_Queries.setBaseSPRepairTime(shallowSpotDepthCutoff, shallowSpotRepairTime, deepSpotRepairTime), CostEstimateConnection);
             nqsqlite(AMStudio_CostEstimator_Queries.setTrafficControlMobilization(streetTypeStreetTrafficControlMobilization, streetTypeArterialTrafficControlMobilization, streetTypeMajorArterialTrafficControlMobilization), CostEstimateConnection);
+            
+            
             nqsqlite(AMStudio_CostEstimator_Queries.setMainlineBypassMobilization(shallowTrenchDepthCutoff, smallMainlineBypassCutoff, workingHoursPerDay), CostEstimateConnection);
             nqsqlite(AMStudio_CostEstimator_Queries.setManholeReplacement(manholeBuildRate, workingHoursPerDay), CostEstimateConnection);
             nqsqlite(AMStudio_CostEstimator_Queries.setLateralBypass(lateralTrenchWidth, lateralShoringLength, excavationDuration, paveDuration), CostEstimateConnection);
@@ -228,12 +231,91 @@ namespace CostEstimatorAddIn
             nqsqlite(AMStudio_CostEstimator_Queries.standardPipeFactorCosts(generalConditionsFactor, wasteAllowanceFactor), CostEstimateConnection);
             nqsqlite(AMStudio_CostEstimator_Queries.contingencyCost(contingencyFactor), CostEstimateConnection);
             nqsqlite(AMStudio_CostEstimator_Queries.setCapitalCost(ConstructionManagementInspectionTestingFactor, designFactor, PublicInvolvementInstrumentationAndControlsEasementEnvironmentalFactor, StartupCloseoutFactor), CostEstimateConnection);
-            nqsqlite(AMStudio_CostEstimator_Queries.saveResultsAsCSV(csvPath), CostEstimateConnection);
+            //nqsqlite(AMStudio_CostEstimator_Queries.saveResultsAsCSV(csvPath), CostEstimateConnection);
 
             CostEstimateConnection.Close();
+
+            //connectionString = "Data Source='" + destinationFolder + "\\PipeDetails.sqlite';Version=3;";
+            var selectQuery = "select * from CapitalCostsMobilizationRatesAndTimes;";
+
+            var table = ReadTable(CostEstimateConnection.ConnectionString, selectQuery);
+            WriteToFile(table, sFile.DirectoryName + "\\CostEstimates\\CapitalCostsMobilizationRatesAndTimes.csv", true, ",");
+
+            selectQuery = "select * from COSTEST_PIPEDETAILS;";
+
+            table = ReadTable(CostEstimateConnection.ConnectionString, selectQuery);
+            WriteToFile(table, sFile.DirectoryName + "\\CostEstimates\\COSTEST_PIPEDETAILS.csv", true, ",");
         }
 
+        public static DataTable ReadTable(string connectionString, string selectQuery)
+        {
+            var returnValue = new DataTable();
 
+            var conn = new SQLiteConnection(connectionString);
+
+            try
+            {
+                conn.Open();
+                var command = new SQLiteCommand(selectQuery, conn);
+
+                using (var adapter = new SQLiteDataAdapter(command))
+                {
+                    adapter.Fill(returnValue);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                throw ex;
+            }
+            finally
+            {
+                if (conn.State == ConnectionState.Open)
+                    conn.Close();
+            }
+
+            return returnValue;
+        }
+
+        public static void WriteToFile(DataTable dataSource, string fileOutputPath, bool firstRowIsColumnHeader = true, string seperator = ",")
+        {
+            var sw = new StreamWriter(fileOutputPath, false);
+
+            int icolcount = dataSource.Columns.Count;
+
+            if (firstRowIsColumnHeader)
+            {
+                for (int i = 0; i < icolcount; i++)
+                {
+                    if ((string)(dataSource.Columns[i].ColumnName) == "ID")
+                    {
+                        sw.Write("id");
+                    }
+                    else
+                    {
+                        sw.Write(dataSource.Columns[i]);
+                    }
+                    if (i < icolcount - 1)
+                        sw.Write(seperator);
+                }
+
+                sw.Write(sw.NewLine);
+            }
+
+            foreach (DataRow drow in dataSource.Rows)
+            {
+                for (int i = 0; i < icolcount; i++)
+                {
+                    if (!Convert.IsDBNull(drow[i]))
+                        sw.Write(drow[i].ToString());
+                    if (i < icolcount - 1)
+                        sw.Write(seperator);
+                }
+                sw.Write(sw.NewLine);
+            }
+            sw.Close();
+        }
 
         public void nqsqlite(string command, SQLiteConnection m_dbConnection)
         {

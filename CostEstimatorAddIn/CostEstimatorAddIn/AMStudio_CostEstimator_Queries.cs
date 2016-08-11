@@ -121,7 +121,22 @@ namespace CostEstimatorAddIn
 "spOnlyConstructionDuration real NULL);" +
 " CREATE UNIQUE INDEX IDX_ConstructionDurations_ID ON AMStudio_ConstructionDurations (ID); " +
 " CREATE INDEX IDX_ConstructionDurations_COMPKEY ON AMStudio_ConstructionDurations (compkey); " +
-    "CREATE INDEX IDX_ConstructionDurations_GLOBALID ON AMStudio_ConstructionDurations (GLOBALID); ";
+    "CREATE INDEX IDX_ConstructionDurations_GLOBALID ON AMStudio_ConstructionDurations (GLOBALID); "+
+
+     "DROP TABLE IF EXISTS AMStudio_CapitalCostsMobilizationRatesAndTimes; " +
+  "CREATE TABLE AMStudio_CapitalCostsMobilizationRatesAndTimes( " +
+    "ID integer NULL, " +
+    "compkey integer NULL, " +
+"globalid integer NULL, " +
+"[type] text NULL, " +
+"[CapitalNonMobilization] real NULL, " +
+"[CapitalMobilizationRate] real NULL, " +
+"[BaseTime] real NULL, " +
+"[MobilizationTime] real NULL, " +
+"[Prejudice] real NULL);" +
+" CREATE UNIQUE INDEX IDX_CapitalCostsMobilizationRatesAndTimes_ID ON AMStudio_CapitalCostsMobilizationRatesAndTimes (ID); " +
+" CREATE INDEX IDX_CapitalCostsMobilizationRatesAndTimes_COMPKEY ON AMStudio_CapitalCostsMobilizationRatesAndTimes (compkey); " +
+    " CREATE INDEX IDX_CapitalCostsMobilizationRatesAndTimes_GLOBALID ON AMStudio_CapitalCostsMobilizationRatesAndTimes (GLOBALID); ";
         }
 
         //This is were we transfer the base data to the working table
@@ -130,7 +145,13 @@ namespace CostEstimatorAddIn
             return "INSERT INTO AMStudio_PipeDetails (ID, GLOBALID, USnode, DSNode, [length], diamWidth, height, cutno, compkey) " +
                 "SELECT OBJECTID, GLOBALID, us_node_id, ds_node_id, [length], pipesize, pipeheight, cutno, hansen_compkey FROM REHABSegments; " +
                 "INSERT INTO AMStudio_ConstructionDurations(ID, globalID, compkey, cutno, [fm], [to]) " +
-                "SELECT OBJECTID, globalID, hansen_compkey, cutno, [fm], [to_] FROM RehabSegments; ";
+                "SELECT OBJECTID, globalID, hansen_compkey, cutno, [fm], [to_] FROM RehabSegments; " +
+                "INSERT INTO AMStudio_CapitalCostsMobilizationRatesAndTimes(ID, Compkey, GlobalID, [Type], [CapitalNonMobilization], [CapitalMobilizationRate], BaseTime, [MobilizationTime]) " +
+                "SELECT ID, Compkey, GlobalID, 'Spot' NULL, NULL, NULL, NULL FROM RehabSegments WHERE ID >= 40000000; " +
+                "INSERT INTO AMStudio_CapitalCostsMobilizationRatesAndTimes(ID, Compkey, GlobalID, [Type], [CapitalNonMobilization], [CapitalMobilizationRate], BaseTime, [MobilizationTime]) " +
+                "SELECT ID, Compkey, GlobalID, 'Dig' NULL, NULL, NULL, NULL FROM RehabSegments WHERE ID < 40000000; " +
+                "INSERT INTO AMStudio_CapitalCostsMobilizationRatesAndTimes(ID, Compkey, GlobalID, [Type], [CapitalNonMobilization], [CapitalMobilizationRate], BaseTime, [MobilizationTime]) " +
+                "SELECT ID, Compkey, GlobalID, 'Line' NULL, NULL, NULL, NULL FROM RehabSegments WHERE ID < 40000000; ";
         }
 
         public static string SetOutsideDiameter()
@@ -679,6 +700,7 @@ namespace CostEstimatorAddIn
                      "WHERE  AMStudio_PipeDetails.ID = AMStudio_ConstructionDurations.ID AND AMStudio_ConstructionDurations.cutno = 0),0); ";
         }
 
+
         public static string setBypassPumping
                              (
                                double fractionalFlow,
@@ -701,8 +723,19 @@ namespace CostEstimatorAddIn
                      "UPDATE AMStudio_PipeDetails " +
                      "SET    BypassPumping = IFNULL(( SELECT BypassCost * (AMStudio_PipeDetails.nonMobilizationConstructionDuration + AMStudio_PipeDetails.mobilizationConstructionDuration) " +
                      "FROM   BypassPumpingUnitRates " +
-                     "WHERE  AMStudio_PipeDetails.BypassFlow > BypassPumpingUnitRates.BypassFlowGPM ORDER BY BypassFlowGPM DESC LIMIT 1),0); ";
+                     "WHERE  AMStudio_PipeDetails.BypassFlow > BypassPumpingUnitRates.BypassFlowGPM ORDER BY BypassFlowGPM DESC LIMIT 1),0); " +
+
+                     "UPDATE  AMStudio_CapitalCostsMobilizationRatesAndTimes " +
+                     "SET     CapitalMobilizationRate = IFNULL(( SELECT BypassCost " +
+                     "FROM   BypassPumpingUnitRates " +
+                     "WHERE  AMStudio_PipeDetails.BypassFlow > BypassPumpingUnitRates.BypassFlowGPM " +
+                     "       AND " +
+                     "       AMStudio_PipeDetails.ID = AMStudio_CapitalCostsMobilizationRatesAndTimes.ID " +
+                     "ORDER BY BypassFlowGPM DESC LIMIT 1),0) WHERE ID < 40000000; ";
+
         }
+
+
 
         public static string setTrafficControl
                              (
@@ -728,13 +761,17 @@ namespace CostEstimatorAddIn
                    "FROM   XPData  " +
                    "WHERE  XPData.ID = AMStudio_PipeDetails.ID); " +
 
-                   "UPDATE AMStudio_ConstructionDurations " +
-                   "SET    trafficControl =  IFNULL(trafficControl,0) * IFNULL("+
-                   "       ( "+
-                   "         SELECT (AMStudio_PipeDetails.nonMobilizationConstructionDuration + AMStudio_PipeDetails.mobilizationConstructionDuration) "+
-                   "         FROM   AMStudio_PipeDetails "+
-                   "         WHERE  AMStudio_PipeDetails.ID = AMStudio_ConstructionDurations.ID " +
+                   "UPDATE  AMStudio_CapitalCostsMobilizationRatesAndTimes " +
+                     "SET     CapitalMobilizationRate = IFNULL(CapitalMobilizationRate,0) + IFNULL(( SELECT BypassCost " +
+                     "FROM   AMStudio_PipeDetails " +
+                     "WHERE  AMStudio_PipeDetails.ID = AMStudio_CapitalCostsMobilizationRatesAndTimes.ID ),0) WHERE ID < 40000000; " +
+
+                   "UPDATE AMStudio_PipeDetails " +
+                   "SET    trafficControl =  IFNULL(trafficControl,0) * " +
+                   "       IFNULL( AMStudio_PipeDetails.nonMobilizationConstructionDuration + AMStudio_PipeDetails.mobilizationConstructionDuration " +
                    "       ) ,0); ";
+
+                   
         }
 
         public static string setBoringJacking
@@ -810,17 +847,105 @@ namespace CostEstimatorAddIn
                                                      "+ IFNULL(CrossingRelocation, 0) " +
                                                      "+ IFNULL(HazardousMaterials, 0) " +
                                                      "+ IFNULL(EnvironmentalMitigation, 0) " +
-                                                   ") ";
+                                                   ") "+
+        
+                   "UPDATE AMStudio_CapitalCostsMobilizationRatesAndTimes " +
+                   "SET    CapitalNonMobilization = IFNULL(( " +
+                   "                               SELECT (IFNULL(DifficultArea, 1) * (" + currentENR.ToString() + "/" + BaseENR.ToString() + ")) " +
+                                                   "*" +
+                                                   "(" +
+                                                     " IFNULL(TrenchShoring, 0) " +
+                                                     "+ IFNULL(TrenchExcavation, 0 ) " +
+                                                     "+ IFNULL(TruckHaul, 0) " +
+                                                     "+ IFNULL(PipeMaterial, 0) " +
+                                                     "+ IFNULL(Manhole, 0) " +
+                                                     "+ IFNULL(FillAbovePipeZone, 0) " +
+                                                     "+ IFNULL(PipeZoneBackfill, 0) " +
+                                                     "+ IFNULL(SawcuttingAC, 0) " +
+                                                     "+ IFNULL(AsphaltRemoval, 0) " +
+                                                     "+ IFNULL(AsphaltTrenchPatch, 0) " +
+                                                     "+ IFNULL(AsphaltBaseCourse, 0) " +
+                                                     "+ IFNULL(ParallelWaterRelocation, 0) " +
+                                                     "+ IFNULL(CrossingRelocation, 0) " +
+                                                     "+ IFNULL(HazardousMaterials, 0) " +
+                                                     "+ IFNULL(EnvironmentalMitigation, 0) " +
+                                                   ") " +
+                                                   "FROM AMStudio_PipeDetails " +
+                                                   "WHERE AMStudio_PipeDetails.ID = AMStudio_CapitalCostsMobilizationRatesAndTimes.ID " +
+                                                   "),0) " +
+                   "WHERE AMStudio_CapitalCostsMobilizationRatesAndTimes.ID < 40000000 " +
+                   "      AND " +
+                   "      AMStudio_CapitalCostsMobilizationRatesAndTimes.Type = 'Dig'; " +
+
+                   "UPDATE AMStudio_CapitalCostsMobilizationRatesAndTimes " +
+                   "SET    CapitalMobilizationRate = IFNULL(( " +
+                   "                               SELECT (IFNULL(DifficultArea, 1) * (" + currentENR.ToString() + "/" + BaseENR.ToString() + ")) " +
+                                                   "*" +
+                                                   "CapitalMobilizationRate " +
+                                                   "FROM AMStudio_PipeDetails " +
+                                                   "WHERE AMStudio_PipeDetails.ID = AMStudio_CapitalCostsMobilizationRatesAndTimes.ID " +
+                                                   "),0) " +
+                   "WHERE AMStudio_CapitalCostsMobilizationRatesAndTimes.ID < 40000000 " +
+                   "      AND " +
+                   "      AMStudio_CapitalCostsMobilizationRatesAndTimes.Type = 'Dig'; ";
         }
 
         public static string standardPipeFactorCosts(double generalConditionsFactor, double wasteAllowanceFactor)
         {
-            return "UPDATE AMStudio_PipeDetails SET StandardPipeFactorCost = DirectConstructionCost * ( 1.0 + " + generalConditionsFactor.ToString() + " + " + wasteAllowanceFactor.ToString() + ");";
+            return "UPDATE AMStudio_PipeDetails SET StandardPipeFactorCost = DirectConstructionCost * ( 1.0 + " + generalConditionsFactor.ToString() + " + " + wasteAllowanceFactor.ToString() + ") WHERE ID < 40000000;" +
+                   
+                "UPDATE AMStudio_CapitalCostsMobilizationRatesAndTimes " +
+                   "SET    CapitalNonMobilization = IFNULL(( " +
+                   "                               SELECT IFNULL(CapitalNonMobilization,0)* (1.0 + " + generalConditionsFactor.ToString() + " + " + wasteAllowanceFactor.ToString() + ")" +
+                                                   "*" +
+                                                   "CapitalMobilizationRate " +
+                                                   "FROM AMStudio_PipeDetails " +
+                                                   "WHERE AMStudio_PipeDetails.ID = AMStudio_CapitalCostsMobilizationRatesAndTimes.ID " +
+                                                   "),0) " +
+                   "WHERE AMStudio_CapitalCostsMobilizationRatesAndTimes.ID < 40000000 " +
+                   "      AND " +
+                   "      AMStudio_CapitalCostsMobilizationRatesAndTimes.Type = 'Dig'; "+
+                   
+                   "UPDATE AMStudio_CapitalCostsMobilizationRatesAndTimes " +
+                   "SET    CapitalMobilizationRate = IFNULL(( " +
+                   "                               SELECT IFNULL(CapitalMobilizationRate,0)* (1.0 + " + generalConditionsFactor.ToString() + " + " + wasteAllowanceFactor.ToString() + ")" +
+                                                   "*" +
+                                                   "CapitalMobilizationRate " +
+                                                   "FROM AMStudio_PipeDetails " +
+                                                   "WHERE AMStudio_PipeDetails.ID = AMStudio_CapitalCostsMobilizationRatesAndTimes.ID " +
+                                                   "),0) " +
+                   "WHERE AMStudio_CapitalCostsMobilizationRatesAndTimes.ID < 40000000 " +
+                   "      AND " +
+                   "      AMStudio_CapitalCostsMobilizationRatesAndTimes.Type = 'Dig'; ";
+        
         }
 
         public static string contingencyCost(double contingencyFactor)
         {
-            return "UPDATE AMStudio_PipeDetails SET ContingencyCost = StandardPipeFactorCost * ( 1.0 + " + contingencyFactor.ToString() + ");";
+            return "UPDATE AMStudio_PipeDetails SET ContingencyCost = StandardPipeFactorCost * ( 1.0 + " + contingencyFactor.ToString() + ") WHERE ID < 40000000;" +
+                "UPDATE AMStudio_CapitalCostsMobilizationRatesAndTimes " +
+                   "SET    CapitalNonMobilization = IFNULL(( " +
+                   "                               SELECT IFNULL(CapitalNonMobilization,0)* (1.0 + " + contingencyFactor.ToString() + ")" +
+                                                   "*" +
+                                                   "CapitalMobilizationRate " +
+                                                   "FROM AMStudio_PipeDetails " +
+                                                   "WHERE AMStudio_PipeDetails.ID = AMStudio_CapitalCostsMobilizationRatesAndTimes.ID " +
+                                                   "),0) " +
+                   "WHERE AMStudio_CapitalCostsMobilizationRatesAndTimes.ID < 40000000 " +
+                   "      AND " +
+                   "      AMStudio_CapitalCostsMobilizationRatesAndTimes.Type = 'Dig'; " +
+
+                   "UPDATE AMStudio_CapitalCostsMobilizationRatesAndTimes " +
+                   "SET    CapitalMobilizationRate = IFNULL(( " +
+                   "                               SELECT IFNULL(CapitalMobilizationRate,0)* (1.0 + " + contingencyFactor.ToString() + ")" +
+                                                   "*" +
+                                                   "CapitalMobilizationRate " +
+                                                   "FROM AMStudio_PipeDetails " +
+                                                   "WHERE AMStudio_PipeDetails.ID = AMStudio_CapitalCostsMobilizationRatesAndTimes.ID " +
+                                                   "),0) " +
+                   "WHERE AMStudio_CapitalCostsMobilizationRatesAndTimes.ID < 40000000 " +
+                   "      AND " +
+                   "      AMStudio_CapitalCostsMobilizationRatesAndTimes.Type = 'Dig'; ";
         }
 
         public static string setCapitalCost
@@ -832,12 +957,220 @@ namespace CostEstimatorAddIn
                              )
         {
             return "UPDATE AMStudio_PipeDetails SET CapitalCost = ContingencyCost * (1.0 + " + ConstructionManagementInspectionTestingFactor.ToString() +
-                    " + " + designFactor.ToString() + " + " + PublicInvolvementInstrumentationAndControlsEasementEnvironmentalFactor.ToString() + " + " + StartupCloseoutFactor.ToString() + ");";
+                    " + " + designFactor.ToString() + " + " + PublicInvolvementInstrumentationAndControlsEasementEnvironmentalFactor.ToString() + " + " + StartupCloseoutFactor.ToString() + ");" +
+                "UPDATE AMStudio_CapitalCostsMobilizationRatesAndTimes " +
+                   "SET    CapitalNonMobilization = IFNULL(( " +
+                   "                               SELECT IFNULL(CapitalNonMobilization,0)* (1.0 + " + ConstructionManagementInspectionTestingFactor.ToString() +
+                    " + " + designFactor.ToString() + " + " + PublicInvolvementInstrumentationAndControlsEasementEnvironmentalFactor.ToString() + " + " + StartupCloseoutFactor.ToString() + ")" +
+                                                   "*" +
+                                                   "CapitalMobilizationRate " +
+                                                   "FROM AMStudio_PipeDetails " +
+                                                   "WHERE AMStudio_PipeDetails.ID = AMStudio_CapitalCostsMobilizationRatesAndTimes.ID " +
+                                                   "),0) " +
+                   "WHERE AMStudio_CapitalCostsMobilizationRatesAndTimes.ID < 40000000 " +
+                   "      AND " +
+                   "      AMStudio_CapitalCostsMobilizationRatesAndTimes.Type = 'Dig'; " +
+
+                   "UPDATE AMStudio_CapitalCostsMobilizationRatesAndTimes " +
+                   "SET    CapitalMobilizationRate = IFNULL(( " +
+                   "                               SELECT IFNULL(CapitalMobilizationRate,0)* (1.0 + " + ConstructionManagementInspectionTestingFactor.ToString() +
+                    " + " + designFactor.ToString() + " + " + PublicInvolvementInstrumentationAndControlsEasementEnvironmentalFactor.ToString() + " + " + StartupCloseoutFactor.ToString() + ")" +
+                                                   "*" +
+                                                   "CapitalMobilizationRate " +
+                                                   "FROM AMStudio_PipeDetails " +
+                                                   "WHERE AMStudio_PipeDetails.ID = AMStudio_CapitalCostsMobilizationRatesAndTimes.ID " +
+                                                   "),0) " +
+                   "WHERE AMStudio_CapitalCostsMobilizationRatesAndTimes.ID < 40000000 " +
+                   "      AND " +
+                   "      AMStudio_CapitalCostsMobilizationRatesAndTimes.Type = 'Dig'; ";
         }
 
-        public static string saveResultsAsCSV(string csvPath)
+        public static string setLinerTrafficControl
+                             (
+                               double streetTypeStreetTrafficControlCost,
+                               double streetTypeArterialTrafficControlCost,
+                               double streetTypeMajorArterialTrafficControlCost,
+                               double streetTypeFreewayTrafficCost,
+                               double daysForWholePipeLinerConstruction
+                             )
         {
-            return ".header on; .mode csv; .once '" + csvPath + "'; SELECT * FROM AMStudio_PipeDetails;";
+            return "UPDATE AMStudio_PipeDetails " +
+                   "SET    linerTrafficControl =  ( " +
+                   "SELECT CASE " +
+                   "         WHEN  pStrtText like 'F' " +
+                   "         THEN " + streetTypeFreewayTrafficCost.ToString() + " " +
+                   "         WHEN  pStrtText like 'A' " +
+                   "         THEN " + streetTypeArterialTrafficControlCost.ToString() + " " +
+                   "         WHEN  pStrtText like 'M' " +
+                   "         THEN  " + streetTypeMajorArterialTrafficControlCost.ToString() + " " +
+                   "         WHEN  pStrtText like 'S' " +
+                   "         THEN " + streetTypeStreetTrafficControlCost.ToString() + " " +
+                   "         ELSE  0 " +
+                   "       END * ((CASE WHEN IFNULL(uxCLx,0) <2 THEN 0 ELSE uxCLX - 2 END)/2 + 1) " + //assumes at least 2 streets at every intersection and bases cost on every additional street.
+                   "FROM   XPData  " +
+                   "WHERE  XPData.ID = AMStudio_PipeDetails.ID); " +
+
+                   "UPDATE AMStudio_PipeDetails " +
+                   "SET    linerTrafficControl =  IFNULL(linerTrafficControl,0) * " + daysForWholePipeLinerConstruction.ToString() +
+                   "       ) ,0); ";
+        }
+
+        public static string setLinerBypassPumping
+                             (
+                               double daysForWholePipeLinerConstruction
+                             )
+        {
+            return "UPDATE AMStudio_PipeDetails " +
+                     "SET    linerBypassPumping = IFNULL(( SELECT BypassCost * "+daysForWholePipeLinerConstruction.ToString()+" " +
+                     "FROM   BypassPumpingUnitRates " +
+                     "WHERE  AMStudio_PipeDetails.BypassFlow > BypassPumpingUnitRates.BypassFlowGPM ORDER BY BypassFlowGPM DESC LIMIT 1),0); ";
+        }
+
+        public static string setLinerBuildDuration
+                             (
+                               double daysForWholePipeLinerConstruction
+                             )
+        {
+            return "UPDATE AMStudio_PipeDetails " +
+                     "SET    SpotLineBuildDuration = " + daysForWholePipeLinerConstruction.ToString() + ";";
+        }
+
+        public static string setLinerLaterals()
+        {
+            return "UPDATE AMStudio_PipeDetails " +
+                     "SET    LinerLaterals = Lateral;";
+        }
+
+        public static string setLinerPipeMaterial()
+        {
+            return "UPDATE AMStudio_PipeDetails " +
+                     "SET    LinerTVCleaning = Length * IFNULL(( SELECT Cost " +
+                     "FROM   LinerTVCleaningCosts " +
+                     "WHERE  AMStudio_PipeDetails.Diameter > LinerTVCleaningCosts.Diameter ORDER BY LinerTVCleaningCosts.Diameter DESC LIMIT 1),0); ";
+        }
+
+        public static string setLinerManhole()
+        {
+            return "UPDATE AMStudio_PipeDetails " +
+                     "SET    LinerManhole = Manhole;";
+        }
+
+        public static string LinerDirectConstructionCost(double currentENR, double BaseENR)
+        {
+            return "UPDATE AMStudio_PipeDetails " +
+                   "SET    LinerDirectConstructionCost = (IFNULL(DifficultArea, 1) * (" + currentENR.ToString() + "/" + BaseENR.ToString() + ")) " +
+                                                   "*" +
+                                                   "(" +
+                                                     "IFNULL(LinerTrafficControl,0) " +
+                                                     "+ IFNULL(LinerBypassPumping, 0) " +
+                                                     "+ IFNULL(LinerPipeMaterial, 0) " +
+                                                     "+ IFNULL(LinerTVCleaning, 0) " +
+                                                   ") " +
+                   "WHERE ID < 40000000; " +
+                            
+                   "UPDATE AMStudio_CapitalCostsMobilizationRatesAndTimes " +
+                   "SET    CapitalNonMobilization = IFNULL(( " +
+                   "                               SELECT (IFNULL(DifficultArea, 1) * (" + currentENR.ToString() + "/" + BaseENR.ToString() + ")) " +
+                                                   "*" +
+                                                   "(" +
+                                                     "IFNULL(LinerTrafficControl,0) " +
+                                                     "+ IFNULL(LinerBypassPumping, 0) " +
+                                                     "+ IFNULL(LinerPipeMaterial, 0) " +
+                                                     "+ IFNULL(LinerTVCleaning, 0) " +
+                                                   ") " +
+                                                   "FROM AMStudio_PipeDetails " +
+                                                   "WHERE AMStudio_PipeDetails.ID = AMStudio_CapitalCostsMobilizationRatesAndTimes.ID " +
+                                                   "),0) " +
+                   "WHERE AMStudio_CapitalCostsMobilizationRatesAndTimes.ID < 40000000 " +
+                   "      AND " +
+                   "      AMStudio_CapitalCostsMobilizationRatesAndTimes.Type = 'Line'; " +
+
+                   "UPDATE AMStudio_CapitalCostsMobilizationRatesAndTimes " +
+                   "SET    CapitalMobilizationRate = CapitalMobilizationRate * IFNULL(( " +
+                   "                               SELECT (IFNULL(DifficultArea, 1) * (" + currentENR.ToString() + "/" + BaseENR.ToString() + "))  " +
+                                                   "FROM AMStudio_PipeDetails " +
+                                                   "WHERE AMStudio_PipeDetails.ID = AMStudio_CapitalCostsMobilizationRatesAndTimes.ID " +
+                                                   "),0) " +
+                   "WHERE AMStudio_CapitalCostsMobilizationRatesAndTimes.ID < 40000000 " +
+                   "      AND " +
+                   "      AMStudio_CapitalCostsMobilizationRatesAndTimes.Type = 'Line'; ";
+        }
+
+        public static string LinerStandardPipeFactorCost(double generalConditionsFactor, double wasteAllowanceFactor)
+        {
+            return "UPDATE AMStudio_PipeDetails " +
+                   "SET    LinerStandardPipeFactorCost = LinerDirectConstructionCost * (1.0 + " + generalConditionsFactor.ToString() + "+" + wasteAllowanceFactor.ToString() + ") "+
+                   "WHERE ID < 40000000; "+
+
+                   "UPDATE AMStudio_CapitalCostsMobilizationRatesAndTimes " +
+                   "SET    CapitalNonMobilization = IFNULL(CapitalNonMobilization,0) * (1.0 + " + generalConditionsFactor.ToString() + "+" + wasteAllowanceFactor.ToString() + ") " +
+                   "WHERE AMStudio_CapitalCostsMobilizationRatesAndTimes.ID < 40000000 " +
+                   "      AND " +
+                   "      AMStudio_CapitalCostsMobilizationRatesAndTimes.Type = 'Line'; " +
+
+                   "UPDATE AMStudio_CapitalCostsMobilizationRatesAndTimes " +
+                   "SET    CapitalMobilizationRate = IFNULL(CapitalMobilizationRate,0) * (1.0 + " + generalConditionsFactor.ToString() + "+" + wasteAllowanceFactor.ToString() + ") " +
+                   "WHERE AMStudio_CapitalCostsMobilizationRatesAndTimes.ID < 40000000 " +
+                   "      AND " +
+                   "      AMStudio_CapitalCostsMobilizationRatesAndTimes.Type = 'Line'; ";
+        }
+
+        public static string LinerContingencyCost(double contingencyFactor)
+        {
+            return "UPDATE AMStudio_PipeDetails " +
+                   "SET    LinerContingencyCost = LinerStandaryPipeFactorCost * (1.0 + " + contingencyFactor.ToString() + ") " +
+                   "WHERE ID < 40000000; " +
+
+                   "UPDATE AMStudio_CapitalCostsMobilizationRatesAndTimes " +
+                   "SET    CapitalNonMobilization = IFNULL(CapitalNonMobilization,0) * (1.0 + " + contingencyFactor.ToString() + ") " +
+                   "WHERE AMStudio_CapitalCostsMobilizationRatesAndTimes.ID < 40000000 " +
+                   "      AND " +
+                   "      AMStudio_CapitalCostsMobilizationRatesAndTimes.Type = 'Line'; " +
+
+                   "UPDATE AMStudio_CapitalCostsMobilizationRatesAndTimes " +
+                   "SET    CapitalMobilizationRate = IFNULL(CapitalMobilizationRate,0) * (1.0 + " + contingencyFactor.ToString() + ") " +
+                   "WHERE AMStudio_CapitalCostsMobilizationRatesAndTimes.ID < 40000000 " +
+                   "      AND " +
+                   "      AMStudio_CapitalCostsMobilizationRatesAndTimes.Type = 'Line'; ";
+        }
+
+        public static string LinerCapitalCost
+                             (
+                               double ConstructionManagementInspectionTestingFactor,
+                               double DesignFactor,
+                               double PublicInvolvementInstrumentationAndControlsEasementEnvironmentalFactor,
+                               double StartupCloseoutFactor
+                               
+                             )
+        {
+            return "UPDATE AMStudio_PipeDetails " +
+                   "SET    LinerContingencyCost = LinerStandaryPipeFactorCost * (1.0 + "
+                   + ConstructionManagementInspectionTestingFactor.ToString() + "+"
+                   +DesignFactor.ToString() + "+" 
+                   +PublicInvolvementInstrumentationAndControlsEasementEnvironmentalFactor.ToString() + "+" 
+                   +StartupCloseoutFactor.ToString() + "+"  +
+                   ") " +
+                   "WHERE ID < 40000000; " +
+
+                   "UPDATE AMStudio_CapitalCostsMobilizationRatesAndTimes " +
+                   "SET    CapitalNonMobilization = IFNULL(CapitalNonMobilization,0) * (1.0 + "
+                   + ConstructionManagementInspectionTestingFactor.ToString() + "+"
+                   + DesignFactor.ToString() + "+"
+                   + PublicInvolvementInstrumentationAndControlsEasementEnvironmentalFactor.ToString() + "+"
+                   + StartupCloseoutFactor.ToString() + "+" + ") " +
+                   "WHERE AMStudio_CapitalCostsMobilizationRatesAndTimes.ID < 40000000 " +
+                   "      AND " +
+                   "      AMStudio_CapitalCostsMobilizationRatesAndTimes.Type = 'Line'; " +
+
+                   "UPDATE AMStudio_CapitalCostsMobilizationRatesAndTimes " +
+                   "SET    CapitalMobilizationRate = IFNULL(CapitalMobilizationRate,0) * (1.0 + "
+                   + ConstructionManagementInspectionTestingFactor.ToString() + "+"
+                   + DesignFactor.ToString() + "+"
+                   + PublicInvolvementInstrumentationAndControlsEasementEnvironmentalFactor.ToString() + "+"
+                   + StartupCloseoutFactor.ToString() + "+" + ") " +
+                   "WHERE AMStudio_CapitalCostsMobilizationRatesAndTimes.ID < 40000000 " +
+                   "      AND " +
+                   "      AMStudio_CapitalCostsMobilizationRatesAndTimes.Type = 'Line'; ";
         }
     }
 }

@@ -147,6 +147,7 @@ namespace CostEstimatorAddIn
             double PublicInvolvementInstrumentationAndControlsEasementEnvironmentalFactor = 0.03; //fraction
             double StartupCloseoutFactor = 0.1;//fraction
             string csvPath = sFile.DirectoryName + "\\CostEstimates\\CostEstimates.csv";
+            double daysForWholePipeLinerConstruction = 3;//days
 
             //make sure we can call the power function
             SQLiteFunction.RegisterFunction(typeof(power));
@@ -222,8 +223,8 @@ namespace CostEstimatorAddIn
             nqsqlite(AMStudio_CostEstimator_Queries.removeBoreJackOptions(boreJackDepth), CostEstimateConnection);
             nqsqlite(AMStudio_CostEstimator_Queries.setnonMobilizationConstructionDuration(), CostEstimateConnection);
             nqsqlite(AMStudio_CostEstimator_Queries.setMobilizationConstructionDuration(), CostEstimateConnection);
-            nqsqlite(AMStudio_CostEstimator_Queries.setBypassPumping(fractionalFlow, Kn, manningsN, assumedSlope), CostEstimateConnection);
-            nqsqlite(AMStudio_CostEstimator_Queries.setTrafficControl(streetTypeStreetTrafficControlCost, streetTypeArterialTrafficControlCost, streetTypeMajorArterialTrafficControlCost, streetTypeFreewayTrafficCost), CostEstimateConnection);
+            nqsqlite(AMStudio_CostEstimator_Queries.setBypassPumping(fractionalFlow, Kn, manningsN, assumedSlope, workingHoursPerDay), CostEstimateConnection);
+            nqsqlite(AMStudio_CostEstimator_Queries.setTrafficControl(streetTypeStreetTrafficControlCost, streetTypeArterialTrafficControlCost, streetTypeMajorArterialTrafficControlCost, streetTypeFreewayTrafficCost, workingHoursPerDay), CostEstimateConnection);
             nqsqlite(AMStudio_CostEstimator_Queries.setBoringJacking(boringJackingCost, baseENR, jackingENR), CostEstimateConnection);
             nqsqlite(AMStudio_CostEstimator_Queries.setDifficultArea(difficultAreaFactor), CostEstimateConnection);
             nqsqlite(AMStudio_CostEstimator_Queries.setLaterals(), CostEstimateConnection);
@@ -231,17 +232,29 @@ namespace CostEstimatorAddIn
             nqsqlite(AMStudio_CostEstimator_Queries.standardPipeFactorCosts(generalConditionsFactor, wasteAllowanceFactor), CostEstimateConnection);
             nqsqlite(AMStudio_CostEstimator_Queries.contingencyCost(contingencyFactor), CostEstimateConnection);
             nqsqlite(AMStudio_CostEstimator_Queries.setCapitalCost(ConstructionManagementInspectionTestingFactor, designFactor, PublicInvolvementInstrumentationAndControlsEasementEnvironmentalFactor, StartupCloseoutFactor), CostEstimateConnection);
-            //nqsqlite(AMStudio_CostEstimator_Queries.saveResultsAsCSV(csvPath), CostEstimateConnection);
+            //Liners
+            nqsqlite(AMStudio_CostEstimator_Queries.setLinerTrafficControl(streetTypeStreetTrafficControlCost, streetTypeArterialTrafficControlCost, streetTypeMajorArterialTrafficControlCost, streetTypeFreewayTrafficCost, daysForWholePipeLinerConstruction), CostEstimateConnection);
+            nqsqlite(AMStudio_CostEstimator_Queries.setLinerBypassPumping(daysForWholePipeLinerConstruction), CostEstimateConnection);
+            nqsqlite(AMStudio_CostEstimator_Queries.setLinerBuildDuration(daysForWholePipeLinerConstruction), CostEstimateConnection);
+            nqsqlite(AMStudio_CostEstimator_Queries.setLinerLaterals(), CostEstimateConnection);
+            nqsqlite(AMStudio_CostEstimator_Queries.setLinerPipeMaterial(), CostEstimateConnection);
+            nqsqlite(AMStudio_CostEstimator_Queries.setLinerManhole(), CostEstimateConnection);
+            nqsqlite(AMStudio_CostEstimator_Queries.LinerDirectConstructionCost(currentENR, baseENR), CostEstimateConnection);
+            nqsqlite(AMStudio_CostEstimator_Queries.LinerStandardPipeFactorCost(generalConditionsFactor, wasteAllowanceFactor), CostEstimateConnection);
+            nqsqlite(AMStudio_CostEstimator_Queries.LinerContingencyCost(contingencyFactor), CostEstimateConnection);
+            nqsqlite(AMStudio_CostEstimator_Queries.LinerCapitalCost(ConstructionManagementInspectionTestingFactor, designFactor, PublicInvolvementInstrumentationAndControlsEasementEnvironmentalFactor, StartupCloseoutFactor), CostEstimateConnection);
 
+            nqsqlite(AMStudio_CostEstimator_Queries.BaseTimesAndMobilizationTimes(workingHoursPerDay, daysForWholePipeLinerConstruction), CostEstimateConnection);
+
+            
             CostEstimateConnection.Close();
 
-            //connectionString = "Data Source='" + destinationFolder + "\\PipeDetails.sqlite';Version=3;";
-            var selectQuery = "select * from CapitalCostsMobilizationRatesAndTimes;";
+            var selectQuery = "select * from AMStudio_CapitalCostsMobilizationRatesAndTimes;";
 
             var table = ReadTable(CostEstimateConnection.ConnectionString, selectQuery);
             WriteToFile(table, sFile.DirectoryName + "\\CostEstimates\\CapitalCostsMobilizationRatesAndTimes.csv", true, ",");
 
-            selectQuery = "select * from COSTEST_PIPEDETAILS;";
+            selectQuery = "select * from AMStudio_PIPEDETAILS;";
 
             table = ReadTable(CostEstimateConnection.ConnectionString, selectQuery);
             WriteToFile(table, sFile.DirectoryName + "\\CostEstimates\\COSTEST_PIPEDETAILS.csv", true, ",");

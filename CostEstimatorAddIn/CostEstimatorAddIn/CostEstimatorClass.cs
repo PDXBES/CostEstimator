@@ -21,7 +21,7 @@ namespace CostEstimatorAddIn
         {
             public override object Invoke(object[] args)
             {
-                return Math.Pow(Double.Parse(args[0].ToString()), Double.Parse(args[0].ToString()));
+                return Math.Pow(Double.Parse(args[0].ToString()), Double.Parse(args[1].ToString()));
             }
         }
 
@@ -33,7 +33,7 @@ namespace CostEstimatorAddIn
             conn.Open();
             //Remember we need to enable spatial queries
             nqsqlite(SQLiteBasicStrings.enableSpatial(), conn);
-            nqsqlite(SQLiteBasicStrings.attachDatabase("C:\\SQLite\\Arc\\PullTables_PipeXP.sqlite", "PullTables"), conn);
+            nqsqlite(SQLiteBasicStrings.attachDatabase(@"\\besfile1\ASM_Apps\Apps\CostEstimator\PullTables\PullTables_PipeXP.sqlite", "PullTables"), conn);
 
 
             //Now that we have loaded our database, which can be found in inputDatabase as the path and sqliteConnectionString as the connection string,
@@ -119,7 +119,7 @@ namespace CostEstimatorAddIn
             double streetTypeStreetTrafficControlMobilization = 1;//hours 
             double streetTypeArterialTrafficControlMobilization = 2; //hours
             double streetTypeMajorArterialTrafficControlMobilization = 3;//hours
-            double shallowTrenchDepthCutoff = 1;
+            double shallowTrenchDepthCutoff = 20; //feet
             double smallMainlineBypassCutoff = 15; //inches
             double manholeBuildRate = 10; //feet per day
             double lateralTrenchWidth = 4; //feet
@@ -157,7 +157,7 @@ namespace CostEstimatorAddIn
 
             //Create cost estimator database
             File.Delete(sFile.DirectoryName + "\\CostEstimates\\CostEstimates.sqlite");
-            SQLiteConnection CostEstimateConnection = new SQLiteConnection("Data Source='" + sFile.DirectoryName + "\\CostEstimates\\CostEstimates.sqlite';Version=3;");
+            SQLiteConnection CostEstimateConnection = new SQLiteConnection("Data Source='" + sFile.DirectoryName + "\\CostEstimates\\CostEstimates.sqlite';Version=3;", true);
             CostEstimateConnection.Open();
 
             //transfer PipXP table and REHABSegments to CostEstimates
@@ -171,7 +171,7 @@ namespace CostEstimatorAddIn
             nqsqlite(AMStudio_CostEstimator_Queries.prepCostEstimator(), CostEstimateConnection);
 
             //This source needs to change, maybe somewhere on the network
-            nqsqlite(SQLiteBasicStrings.attachDatabase("C:\\SQLite\\Arc\\PullTables_CostEstimator.sqlite", "CostEstimator"), CostEstimateConnection);
+            nqsqlite(SQLiteBasicStrings.attachDatabase(@"\\besfile1\ASM_Apps\Apps\CostEstimator\PullTables\PullTables_CostEstimator.sqlite", "CostEstimator"), CostEstimateConnection);
 
             //Then we do our first insert
             nqsqlite(AMStudio_CostEstimator_Queries.transferBase(), CostEstimateConnection);
@@ -238,8 +238,10 @@ namespace CostEstimatorAddIn
             nqsqlite(AMStudio_CostEstimator_Queries.setLinerBuildDuration(daysForWholePipeLinerConstruction), CostEstimateConnection);
             nqsqlite(AMStudio_CostEstimator_Queries.setLinerLaterals(), CostEstimateConnection);
             nqsqlite(AMStudio_CostEstimator_Queries.setLinerPipeMaterial(), CostEstimateConnection);
+            nqsqlite(AMStudio_CostEstimator_Queries.setLinerTVCleaning(), CostEstimateConnection);
             nqsqlite(AMStudio_CostEstimator_Queries.setLinerManhole(), CostEstimateConnection);
             nqsqlite(AMStudio_CostEstimator_Queries.LinerDirectConstructionCost(currentENR, baseENR), CostEstimateConnection);
+            nqsqlite(AMStudio_CostEstimator_Queries.LinerMobilizationTimes(), CostEstimateConnection);
             nqsqlite(AMStudio_CostEstimator_Queries.LinerStandardPipeFactorCost(generalConditionsFactor, wasteAllowanceFactor), CostEstimateConnection);
             nqsqlite(AMStudio_CostEstimator_Queries.LinerContingencyCost(contingencyFactor), CostEstimateConnection);
             nqsqlite(AMStudio_CostEstimator_Queries.LinerCapitalCost(ConstructionManagementInspectionTestingFactor, designFactor, PublicInvolvementInstrumentationAndControlsEasementEnvironmentalFactor, StartupCloseoutFactor), CostEstimateConnection);

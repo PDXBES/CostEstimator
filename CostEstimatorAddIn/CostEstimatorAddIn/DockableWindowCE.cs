@@ -92,17 +92,17 @@ namespace CostEstimatorAddIn
                 sFolder = sFile.Directory.FullName;
 
                 ESRI.ArcGIS.Framework.IMouseCursor theCursor = new ESRI.ArcGIS.Framework.MouseCursor();
-                /*theCursor.SetCursor(2);
+                theCursor.SetCursor(2);
                 TranslateArcToSQLite tats = new TranslateArcToSQLite();
                 tats.TranslateEmgaatsModel(sFile);
                 theCursor.SetCursor(0);
                 theCursor.SetCursor(2);
                 tats.createDMEPipesFromEmgaatsTables(sFile);
-                theCursor.SetCursor(0);*/
+                theCursor.SetCursor(0);
                 //now that that is done, we can start pipXP
                 CostEstimatorClass cec = new CostEstimatorClass();
                 theCursor.SetCursor(2);
-                //cec.PerformPipeXP(sFile);
+                cec.PerformPipeXP(sFile);
                 theCursor.SetCursor(0);
                 theCursor.SetCursor(2);
                 cec.PerformCostEstimates(sFile);

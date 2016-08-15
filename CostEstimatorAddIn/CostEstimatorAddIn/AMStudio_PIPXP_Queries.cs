@@ -803,12 +803,12 @@ namespace CostEstimatorAddIn
 
                 "UPDATE AMStudio_PIPEXP " +
                 "SET uxCLx = ( " +
-                "SELECT  SUM(countStreets)  " +
+                "SELECT  MAX(countStreets)  " +
                 "FROM    REHABSegments AS A " +
                 "        INNER JOIN " +
                 "        Street_IntersectionsBuffer AS B " +
-                "        ON  AMStudio_PIPEXP.ID = A.OBJECTID " +
-                "WHERE   ST_Intersects(A.Shape, B.Shape) = 1 GROUP BY A.OBJECTID); " +
+                "        ON ST_Intersects(A.Shape, B.Shape) = 1  " +
+                "WHERE   AMStudio_PIPEXP.ID = A.OBJECTID GROUP BY A.OBJECTID); " +
 
                 "UPDATE AMStudio_PIPEXP " +
                 "SET uxFt2CLx = ( " +

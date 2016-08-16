@@ -1054,7 +1054,7 @@ namespace CostEstimatorAddIn
             return "UPDATE AMStudio_PipeDetails " +
                      "SET    LinerPipeMaterial = Length * IFNULL(( SELECT Cost " +
                      "FROM   LinerCostsTable " +
-                     "WHERE  AMStudio_PipeDetails.DiamWidth > LinerCostsTable.Diameter ORDER BY LinerCostsTable.Diameter DESC LIMIT 1),0); ";
+                     "WHERE  AMStudio_PipeDetails.DiamWidth > LinerCostsTable.DiameterInches ORDER BY LinerCostsTable.DiameterInches DESC LIMIT 1),0); ";
         }
 
         public static string setLinerTVCleaning()

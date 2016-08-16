@@ -44,12 +44,12 @@ namespace CostEstimatorAddIn
             nqsqlite(AMStudio_PIPXP_Queries.prepPIPEXP(), conn);
 
             //Then we do our first insert
-            nqsqlite(AMStudio_PIPXP_Queries.transferBase(), conn);
+            nqsqlite(AMStudio_PIPXP_Queries.transferBase(250.0), conn);
 
             //Proximity to hardAreas
             nqsqlite(AMStudio_PIPXP_Queries.ProximityToHardAreas(), conn);
             nqsqlite(AMStudio_PIPXP_Queries.ProximityToHydrants_pdx(25.0), conn);
-            //nqsqlite(AMStudio_PIPXP_Queries.ProximityToBuildings(10));
+            nqsqlite(AMStudio_PIPXP_Queries.ProximityToBuildings(10), conn);
             nqsqlite(AMStudio_PIPXP_Queries.RandomStats(), conn);
             nqsqlite(AMStudio_PIPXP_Queries.ResultsUIC(), conn);
             nqsqlite(AMStudio_PIPXP_Queries.ResultsMS4(), conn);

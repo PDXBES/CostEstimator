@@ -438,7 +438,7 @@ namespace CostEstimatorAddIn
         "DROP TABLE IF EXISTS " + tablePrefix + "IntersectsBuffer; " +
         "CREATE TABLE " + tablePrefix + "IntersectsBuffer (OBJECTID integer, " + columnToKeep + " " + columnType + "); " +
         "SELECT AddGeometryColumn(null, '" + tablePrefix + "IntersectsBuffer', 'Shape', 2913, 'multipolygon', 'xy', 'null'); " +
-        "INSERT INTO " + tablePrefix + "IntersectsBuffer (OBJECTID, Shape) SELECT A.OBJECTID, A.Shape FROM " + tablePrefix + "Buffer AS A INNER JOIN PipeAgg AS B ON ST_Intersects(A.Shape, B.Shape) = 1;" +
+        "INSERT INTO " + tablePrefix + "IntersectsBuffer (OBJECTID, " + columnToKeep + ",Shape) SELECT A.OBJECTID, " + columnToKeep + ", A.Shape FROM " + tablePrefix + "Buffer AS A INNER JOIN PipeAgg AS B ON ST_Intersects(A.Shape, B.Shape) = 1;" +
 
         //tableInBuffer is the unbuffered objects that are within the buffer distance
         "DROP TABLE IF EXISTS " + tablePrefix + "InBuffer; " +
@@ -497,16 +497,20 @@ namespace CostEstimatorAddIn
 
                 "DROP TABLE IF EXISTS " + tablePrefix + "Buffer; " +
                 "CREATE TABLE " + tablePrefix + "Buffer AS SELECT * FROM  " + tableName + "Close;" +
-                "SELECT AddGeometryColumn(null, '" + tablePrefix + "Buffer', 'Shape2', 2913, 'multipolygon', 'xy', 'null'); " +
-                "UPDATE " + tableName + "Buffer SET Shape2 = ST_Buffer(Shape, " + distance + ");" +
+                "SELECT AddGeometryColumn(null, '" + tablePrefix + "Buffer', 'ShapeBuffer', 2913, 'multipolygon', 'xy', 'null'); " +
+                "UPDATE " + tableName + "Buffer SET ShapeBuffer = ST_Buffer(Shape, " + distance + ");" +
 
                 "DROP TABLE IF EXISTS " + tablePrefix + "IntersectsBuffer; " +
                 "CREATE TABLE " + tablePrefix + "IntersectsBuffer AS SELECT A.* FROM  " + tableName + "Buffer AS A INNER JOIN PipeAgg AS B ON ST_Intersects(A.Shape, B.Shape) = 1;" +
+                "SELECT AddGeometryColumn(null, '" + tablePrefix + "IntersectsBuffer', 'ShapeIntersectsBuffer', 2913, 'multipolygon', 'xy', 'null'); " +
+                "UPDATE " + tableName + "IntersectsBuffer SET ShapeIntersectsBuffer = ShapeBuffer;" +
 
                 //tableInBuffer is the unbuffered objects that are within the buffer distance
                 "DROP TABLE IF EXISTS " + tablePrefix + "InBuffer; " +
-                "CREATE TABLE " + tablePrefix + "InBuffer AS SELECT A.* FROM " + tableName + "Close AS A INNER JOIN " + tableName + "IntersectsBuffer AS B ON A.OBJECTID = B.OBJECTID;";
-        
+                "CREATE TABLE " + tablePrefix + "InBuffer AS SELECT A.*, B.ShapeIntersectsBuffer FROM " + tableName + "Close AS A INNER JOIN " + tableName + "IntersectsBuffer AS B ON A.OBJECTID = B.OBJECTID;" +
+                "SELECT AddGeometryColumn(null, '" + tablePrefix + "InBuffer', 'ShapeInBuffer', 2913, 'multipolygon', 'xy', 'null'); " +
+                "UPDATE " + tableName + "InBuffer SET ShapeInBuffer = (SELECT Shape FROM " + tablePrefix + "Close WHERE " + tablePrefix + "Close.OBJECTID =  " + tableName + "InBuffer.OBJECTID);";
+
         }
 
         //COSTEST_PORTLAND_POLICE_FACILITIES_PDX
@@ -1076,7 +1080,7 @@ namespace CostEstimatorAddIn
                 "DELETE FROM SewerXP WHERE  trim(ad) like trim(bd);" +
                 "DELETE FROM SewerXP WHERE  trim(au) like trim(bd);" +
                 "DELETE FROM SewerXP WHERE  trim(ad) like trim(bu);" +
-                "UPDATE SewerXP SET BShape = (SELECT Shape FROM REHABSegments WHERE OBJECTID = SewerXP.BOBJECTID); " +
+                "UPDATE SewerXP SET BShape = (SELECT Shape FROM BESPipesClose WHERE OBJECTID = SewerXP.BOBJECTID); " +
                 "UPDATE SewerXP SET pFt2Swr = ST_Distance(AShape, BShape); "+
                 //Then we update the main table
 
@@ -1170,11 +1174,11 @@ namespace CostEstimatorAddIn
 
                 "DROP TABLE IF EXISTS WaterXP; " +
                 "CREATE TABLE WaterXP AS " +
-                "SELECT  A.OBJECTID AS AOBJECTID, B.OBJECTID AS BOBJECTID, B.Mainsize AS pWtrD, ST_Distance(A.Shape, B.Shape) AS pFt2Wtr   " +
+                "SELECT  A.OBJECTID AS AOBJECTID, B.OBJECTID AS BOBJECTID, B.Mainsize AS pWtrD, ST_Distance(A.Shape, B.ShapeInBuffer) AS pFt2Wtr   " +
                 "FROM    REHABSegments AS A " +
                 "        INNER JOIN " +
                 "        PressurizedWaterMainsInBuffer AS B " +
-                "        ON ST_Intersects(A.Shape, B.Shape) = 1 " +
+                "        ON ST_Intersects(A.Shape, B.ShapeIntersectsBuffer) = 1 " +
                 "        AND  B.Status NOT LIKE 'ABN'; " +
                 "CREATE INDEX IDX_ResultsWaterXP ON WaterXP(AOBJECTID); " +
                 //Then we update the main table
@@ -1233,8 +1237,8 @@ namespace CostEstimatorAddIn
                 "        ON  AMStudio_PIPEXP.ID = A.OBJECTID " +
                 "        AND  B.AObjectID = A.OBJECTID AND pFt2Wtr > 0 GROUP BY A.OBJECTID); " +
                 //Then we drop the intersection table
-            "DROP INDEX IDX_ResultsWaterXP; " +
-            "DROP TABLE WaterXP;";
+            "DROP INDEX IDX_ResultsWaterXP; ";
+            //"DROP TABLE WaterXP;";
         }
 
         public static string CountLaterals()

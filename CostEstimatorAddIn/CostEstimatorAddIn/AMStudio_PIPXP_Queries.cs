@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -1244,14 +1243,16 @@ namespace CostEstimatorAddIn
         public static string CountLaterals()
         {
             return
-                "UPDATE	AMStudio_PIPEXP " +
+                /*"UPDATE	AMStudio_PIPEXP " +
                 "SET     LateralCount = " +
                 "        ( " +
                 "          SELECT COUNT(*)  " +
                 "          FROM   Laterals " +
                 "          WHERE  Compkey =  AMStudio_PIPEXP.hansen_compkey " +
                 "          GROUP BY Compkey " +
-                "        ) ; ";
+                "        ) ; ";*/
+                "UPDATE	 AMStudio_PIPEXP " +
+                "SET     LateralCount = 2*Length/50; ";
         }
 
     }

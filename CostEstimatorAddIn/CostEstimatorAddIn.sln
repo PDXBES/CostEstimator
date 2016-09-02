@@ -5,7 +5,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CostEstimatorAddIn", "CostE
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2E95A0EC-2007-4AF6-ACB6-5632B42B8D3E}"
 	ProjectSection(SolutionItems) = preProject
+		D:\CostEstimator\AddIndex.py = D:\CostEstimator\AddIndex.py
 		CostEstimatorAddIn\bin\Debug\CEPython.tbx = CostEstimatorAddIn\bin\Debug\CEPython.tbx
+		D:\CostEstimator\ExportLinks.py = D:\CostEstimator\ExportLinks.py
 	EndProjectSection
 EndProject
 Global

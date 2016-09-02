@@ -1,0 +1,9 @@
+C:\Users\issacg\Documents\GitHub\CostEstimator\CostReporter\CostReporter\CostReporter\bin\Debug\CostReporter.exe.config
+C:\Users\issacg\Documents\GitHub\CostEstimator\CostReporter\CostReporter\CostReporter\bin\Debug\CostReporter.exe
+C:\Users\issacg\Documents\GitHub\CostEstimator\CostReporter\CostReporter\CostReporter\bin\Debug\CostReporter.pdb
+C:\Users\issacg\Documents\GitHub\CostEstimator\CostReporter\CostReporter\CostReporter\obj\Debug\CostReporter.csprojResolveAssemblyReference.cache
+C:\Users\issacg\Documents\GitHub\CostEstimator\CostReporter\CostReporter\CostReporter\obj\Debug\CostReporter.Form1.resources
+C:\Users\issacg\Documents\GitHub\CostEstimator\CostReporter\CostReporter\CostReporter\obj\Debug\CostReporter.Properties.Resources.resources
+C:\Users\issacg\Documents\GitHub\CostEstimator\CostReporter\CostReporter\CostReporter\obj\Debug\CostReporter.csproj.GenerateResource.Cache
+C:\Users\issacg\Documents\GitHub\CostEstimator\CostReporter\CostReporter\CostReporter\obj\Debug\CostReporter.exe
+C:\Users\issacg\Documents\GitHub\CostEstimator\CostReporter\CostReporter\CostReporter\obj\Debug\CostReporter.pdb

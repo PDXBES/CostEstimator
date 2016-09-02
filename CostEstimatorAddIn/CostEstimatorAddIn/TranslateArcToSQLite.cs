@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+//using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using System.Data.SQLite;
 using System.Windows.Forms;
 using ESRI.ArcGIS.Geoprocessing;
+using ESRI.ArcGIS.Geoprocessor;
 using System.Reflection;
 
 namespace CostEstimatorAddIn
@@ -33,13 +34,12 @@ namespace CostEstimatorAddIn
                 parameters[0] = sFile.DirectoryName+"\\EmgaatsModel.gdb\\Network\\Links";
                 parameters[1] = sFile.DirectoryName+ "\\CostEstimates\\EmgaatsTranslation.sqlite";
                 parameters[2] = "Links";
-                callPythonScript("PythonFeatureClassToFeatureClass", parameters);
-
+                CopyFeatureClass(parameters[0], parameters[1], parameters[2]);
 
                 parameters[0] = sFile.DirectoryName + "\\EmgaatsModel.gdb\\Network\\Nodes";
                 parameters[1] = sFile.DirectoryName + "\\CostEstimates\\EmgaatsTranslation.sqlite";
                 parameters[2] = "Nodes";
-                callPythonScript("PythonFeatureClassToFeatureClass", parameters);
+                CopyFeatureClass(parameters[0], parameters[1], parameters[2]);
             }
             catch (Exception ex)
             {
@@ -130,7 +130,7 @@ namespace CostEstimatorAddIn
             //dont forget to add the spatial index!
             string[] parameters = new string[1];
             parameters[0] = sFile.DirectoryName + "\\CostEstimates\\EmgaatsTranslation.sqlite\\main.REHABSegments";
-            callPythonScript("PythonAddSpatialIndex", parameters);
+            //callPythonScript("PythonAddSpatialIndex", parameters);
         }
 
         public void createSpatialSQLiteFile(string directory)
@@ -169,15 +169,11 @@ namespace CostEstimatorAddIn
             {
                 IGeoProcessor2 gp = new GeoProcessorClass();
                 ESRI.ArcGIS.esriSystem.IVariantArray parameters = new ESRI.ArcGIS.esriSystem.VarArrayClass();
-                //gp.AddToolbox(@"C:\YourPath\YourToolbox.tbx");
                 string codeBase = Assembly.GetExecutingAssembly().CodeBase;
                 UriBuilder uri = new UriBuilder(codeBase);
                 string path = Uri.UnescapeDataString(uri.Path);
-                //MessageBox.Show(Path.GetDirectoryName(path) + "\\CEPython.tbx");
-                gp.AddToolbox(Path.GetDirectoryName(path) + "\\CEPython.tbx");
                 foreach (string s in allParameters)
                 {
-                    //parameters.Add(@"C:\YourPath\ParamsIfYouHaveThem.gdb\ParamFC");
                     parameters.Add(s);
                 }
 
@@ -185,7 +181,28 @@ namespace CostEstimatorAddIn
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Could not execute script:\n" + ex.ToString());
+                MessageBox.Show("Could not execute script:\n" + toolName + "\n" + ex.ToString());
+            }
+        }
+
+        public void CopyFeatureClass(string in_features, string out_path, string out_name, string where_clause = "")
+        {
+            try{
+                Geoprocessor GP = new Geoprocessor();
+                ESRI.ArcGIS.ConversionTools.FeatureClassToFeatureClass copyTool = new ESRI.ArcGIS.ConversionTools.FeatureClassToFeatureClass();
+                GP.SetEnvironmentValue("OutputMFlag", "FALSE");
+                GP.SetEnvironmentValue("OutputZFlag", "FALSE");
+                copyTool.in_features = in_features;
+                copyTool.out_path = out_path;
+                copyTool.out_name = out_name;
+                copyTool.where_clause = where_clause;
+                GP.Execute(copyTool, null);
+                copyTool = null;
+                GC.Collect();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Could not execute CopyFeatureClass:\n" + in_features +"\n" + out_path + "\n" + out_name + "\n" + where_clause + "\n" + ex.ToString());
             }
         }
     }

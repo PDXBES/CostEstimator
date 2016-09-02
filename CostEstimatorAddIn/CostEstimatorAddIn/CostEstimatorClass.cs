@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+//using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
@@ -260,6 +260,11 @@ namespace CostEstimatorAddIn
 
             table = ReadTable(CostEstimateConnection.ConnectionString, selectQuery);
             WriteToFile(table, sFile.DirectoryName + "\\CostEstimates\\COSTEST_PIPEDETAILS.csv", true, ",");
+
+            selectQuery = "SELECT * FROM XPData;";//"select * from AMStudio_PIPEXP;";
+
+            table = ReadTable(CostEstimateConnection.ConnectionString, selectQuery);
+            WriteToFile(table, sFile.DirectoryName + "\\CostEstimates\\COSTEST_PIPEXP.csv", true, ",");
         }
 
         public static DataTable ReadTable(string connectionString, string selectQuery)

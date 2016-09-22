@@ -35,11 +35,15 @@ namespace CostEstimatorAddIn
                 parameters[1] = sFile.DirectoryName+ "\\CostEstimates\\EmgaatsTranslation.sqlite";
                 parameters[2] = "Links";
                 CopyFeatureClass(parameters[0], parameters[1], parameters[2]);
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
 
                 parameters[0] = sFile.DirectoryName + "\\EmgaatsModel.gdb\\Network\\Nodes";
                 parameters[1] = sFile.DirectoryName + "\\CostEstimates\\EmgaatsTranslation.sqlite";
                 parameters[2] = "Nodes";
                 CopyFeatureClass(parameters[0], parameters[1], parameters[2]);
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
             }
             catch (Exception ex)
             {
@@ -197,8 +201,7 @@ namespace CostEstimatorAddIn
                 copyTool.out_name = out_name;
                 copyTool.where_clause = where_clause;
                 GP.Execute(copyTool, null);
-                copyTool = null;
-                GC.Collect();
+                
             }
             catch (Exception ex)
             {

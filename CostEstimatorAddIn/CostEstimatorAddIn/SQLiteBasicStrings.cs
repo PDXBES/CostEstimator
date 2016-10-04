@@ -3,6 +3,7 @@ using System.Collections.Generic;
 //using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Data.SQLite;
 
 namespace CostEstimatorAddIn
 {
@@ -13,9 +14,11 @@ namespace CostEstimatorAddIn
             return "ATTACH DATABASE '" + databaseLocation + "' As '" + aliasName + "'; ";
         }
 
-        public static string enableSpatial()
+        public static void enableSpatial(SQLiteConnection conn)
         {
-            return "SELECT load_extension('C:\\Program Files (x86)\\ArcGIS\\Desktop10.2\\DatabaseSupport\\SQLite\\Windows32\\stgeometry_sqlite.dll', 'SDE_SQL_funcs_init');";
+            //return "SELECT load_extension('C:\\Program Files (x86)\\ArcGIS\\Desktop10.2\\DatabaseSupport\\SQLite\\Windows32\\stgeometry_sqlite.dll', 'SDE_SQL_funcs_init');";
+          conn.EnableExtensions(true);
+          conn.LoadExtension(@"C:\Program Files (x86)\ArcGIS\Desktop10.2\DatabaseSupport\SQLite\Windows32\stgeometry_sqlite.dll", "SDE_SQL_funcs_init");
         }
 
         public static string createArcSpatialEnvironment()

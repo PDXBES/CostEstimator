@@ -161,7 +161,7 @@ namespace CostEstimatorAddIn
             Directory.CreateDirectory(sFile.DirectoryName + "\\" + pipeXPFolderName);
             SQLiteConnection conn = new SQLiteConnection("Data Source = '" + sFile.DirectoryName + "\\" + pipeXPFolderName + "\\" + pipeXPSQLiteDBName + ".sqlite';Version=3", true);
             conn.Open(); 
-            pa.nqsqlite(SQLiteBasicStrings.enableSpatial(), conn);
+            SQLiteBasicStrings.enableSpatial(conn);
             pa.nqsqlite(SQLiteBasicStrings.createArcSpatialEnvironment(), conn);
             conn.Close();
 

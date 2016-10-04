@@ -61,7 +61,8 @@ namespace CostEstimatorAddIn
             SQLiteConnection conn = new SQLiteConnection("Data Source = '" + sFile.DirectoryName + "\\CostEstimates\\EmgaatsTranslation.sqlite';Version=3", true);
             conn.Open();
             //Remember we need to enable spatial queries
-            nqsqlite(SQLiteBasicStrings.enableSpatial(), conn);
+            SQLiteBasicStrings.enableSpatial(conn);
+
             string shapeType = "";
             int srid = 2913;
             
@@ -141,7 +142,7 @@ namespace CostEstimatorAddIn
         {
             SQLiteConnection conn = new SQLiteConnection("Data Source ='"+directory + "\\EmgaatsTranslation.sqlite';Version=3;", true);
             conn.Open();
-            nqsqlite(SQLiteBasicStrings.enableSpatial(), conn);
+            SQLiteBasicStrings.enableSpatial(conn);
             nqsqlite(SQLiteBasicStrings.createArcSpatialEnvironment(), conn);
             conn.Close();
         }

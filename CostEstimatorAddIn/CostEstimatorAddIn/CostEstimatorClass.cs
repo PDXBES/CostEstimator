@@ -32,7 +32,7 @@ namespace CostEstimatorAddIn
             SQLiteConnection conn = new SQLiteConnection("Data Source = '" + sFile.DirectoryName + "\\CostEstimates\\EmgaatsTranslation.sqlite';Version=3", true);
             conn.Open();
             //Remember we need to enable spatial queries
-            nqsqlite(SQLiteBasicStrings.enableSpatial(), conn);
+            SQLiteBasicStrings.enableSpatial(conn);
             nqsqlite(SQLiteBasicStrings.attachDatabase(@"\\besfile1\ASM_Apps\Apps\CostEstimator\PullTables\PullTables_PipeXP.sqlite", "PullTables"), conn);
 
 

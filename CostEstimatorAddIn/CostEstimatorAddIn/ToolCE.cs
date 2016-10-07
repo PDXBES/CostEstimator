@@ -5,16 +5,16 @@ using System.IO;
 
 namespace CostEstimatorAddIn
 {
-    public class ToolCE : ESRI.ArcGIS.Desktop.AddIns.Tool
+  public class ToolCE : ESRI.ArcGIS.Desktop.AddIns.Tool
+  {
+    public ToolCE()
     {
-        public ToolCE()
-        {
-        }
-
-        protected override void OnUpdate()
-        {
-            Enabled = ArcMap.Application != null;
-        }
     }
+
+    protected override void OnUpdate()
+    {
+      Enabled = ArcMap.Application != null;
+    }
+  }
 
 }

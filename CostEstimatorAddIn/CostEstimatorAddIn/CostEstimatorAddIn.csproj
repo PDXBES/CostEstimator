@@ -118,7 +118,7 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AMStudio_CostEstimator_Queries.cs" />
+    <Compile Include="AmStudioCostEstimatorQueries.cs" />
     <Compile Include="AMStudio_PIPXP_Queries.cs" />
     <Compile Include="Config.Designer.cs">
       <AutoGen>True</AutoGen>

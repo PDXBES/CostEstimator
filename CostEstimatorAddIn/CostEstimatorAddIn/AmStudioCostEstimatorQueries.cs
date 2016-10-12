@@ -269,7 +269,7 @@ namespace CostEstimatorAddIn
       return 
         "UPDATE AMStudio_PipeDetails " +
         "SET    [EnvironmentalMitigation] = ( " +
-          "SELECT " + envMitigationCost.ToString() + "*((IFNULL(xFtEzonC,0) + IFNULL(xFtEzonP,0)) *" + envMitigationWidth.ToString() + ")/43560.0  " + //43560 squre feet per acre
+          "SELECT " + envMitigationCost.ToString() + "*((IFNULL(xFtEzonC,0) + IFNULL(xFtEzonP,0)) *" + envMitigationWidth.ToString() + ")/43560.0  " + // 43560 squre feet per acre
           "FROM   XPData " +
           "WHERE  (IFNULL(xFtEzonC,0) + IFNULL(xFtEzonP,0)) > 0 AND XPData.ID = AMStudio_PipeDetails.ID); ";
     }
@@ -285,7 +285,7 @@ namespace CostEstimatorAddIn
       return 
         "UPDATE AMStudio_PipeDetails " +
         "SET    [AsphaltRemoval] = ( " +
-          "SELECT " + asphaltRemovalCost.ToString() + "*((TrenchBaseWidth + " + excessAsphaltWidth.ToString() + ") / 9.0) * [length]  " + //9 square feet per square yard
+          "SELECT " + asphaltRemovalCost.ToString() + "*((TrenchBaseWidth + " + excessAsphaltWidth.ToString() + ") / 9.0) * [length]  " + // 9 square feet per square yard
           "FROM   XPData " +
           "WHERE  XPData.ID = AMStudio_PipeDetails.ID); ";
     }
@@ -433,18 +433,18 @@ namespace CostEstimatorAddIn
     /// Sets the trench shoring cost
     /// </summary>
     /// <param name="shoringSquareFeetPerFoot">The amount of shoring to assume per foot of pipe</param>
-    /// <param name="ShoringCostPerSquareFoot">The cost of shoring per square foot</param>
+    /// <param name="shoringCostPerSquareFoot">The cost of shoring per square foot</param>
     /// <param name="minShoringDepth">The minimum shoring depth</param>
     /// <returns>Query string for setting the trench shoring cost</returns>
     public static string SetTrenchShoring(
       double shoringSquareFeetPerFoot,
-      double ShoringCostPerSquareFoot,
+      double shoringCostPerSquareFoot,
       double minShoringDepth)
     {
       return 
         "UPDATE AMStudio_PipeDetails " +
         "SET    [TrenchShoring] = IFNULL(( " +
-          "SELECT " + shoringSquareFeetPerFoot.ToString() + " * " + ShoringCostPerSquareFoot.ToString() + " * [length] * (uDepth+dDepth)/2.0 " +
+          "SELECT " + shoringSquareFeetPerFoot.ToString() + " * " + shoringCostPerSquareFoot.ToString() + " * [length] * (uDepth+dDepth)/2.0 " +
           "FROM   DepthToTrenchExcavationCostRecord INNER JOIN XPData ON (uDepth+dDepth)/2 >= depthFt " +
           "WHERE  XPData.ID = AMStudio_PipeDetails.ID AND (uDepth+dDepth)/2.0 >= " + minShoringDepth.ToString() + "),0); ";
     }
@@ -464,7 +464,11 @@ namespace CostEstimatorAddIn
           "WHERE  XPData.ID = AMStudio_PipeDetails.ID AND PipeMaterialCosts.Material like '" + material + "' ORDER BY minDiameter DESC LIMIT 1),0); ";
     }
 
-    public static string setPipeDepthDifficultyFactor()
+    /// <summary>
+    /// Sets the pipe depth difficulty factor
+    /// </summary>
+    /// <returns>Query string for setting the pipe depth difficulty factor</returns>
+    public static string SetPipeDepthDifficultyFactor()
     {
       return 
         "UPDATE AMStudio_PipeDetails " +
@@ -474,7 +478,11 @@ namespace CostEstimatorAddIn
           "WHERE  XPData.ID = AMStudio_PipeDetails.ID ORDER BY smallestDiameter DESC, Depth DESC LIMIT 1),1); ";
     }
 
-    public static string setPipeMaterial()
+    /// <summary>
+    /// Sets the pipe material cost
+    /// </summary>
+    /// <returns>Query string setting the pipe material cost</returns>
+    public static string SetPipeMaterial()
     {
       return 
         "UPDATE AMStudio_PipeDetails " +
@@ -484,7 +492,11 @@ namespace CostEstimatorAddIn
           "WHERE  XPData.ID = AMStudio_PipeDetails.ID ),0); ";
     }
 
-    public static string setManholeSize()
+    /// <summary>
+    /// Sets the manhole size
+    /// </summary>
+    /// <returns>Query string setting the manhole size</returns>
+    public static string SetManholeSize()
     {
       return 
         "UPDATE AMStudio_PipeDetails " +
@@ -494,7 +506,11 @@ namespace CostEstimatorAddIn
           "WHERE  AMStudio_PipeDetails.DiamWidth <= insideDiameterInches ORDER BY insideDiameterInches ASC LIMIT 1),0); ";
     }
 
-    public static string setManholeBaseCost()
+    /// <summary>
+    /// Sets the manhole base cost
+    /// </summary>
+    /// <returns>Query string setting the manhole base cost</returns>
+    public static string SetManholeBaseCost()
     {
       return "UPDATE AMStudio_PipeDetails " +
              "SET    ManholeBaseCost = IFNULL(( " +
@@ -503,7 +519,11 @@ namespace CostEstimatorAddIn
                "WHERE  AMStudio_PipeDetails.ManholeSize <= manholeDiameter ORDER BY manholeDiameter ASC LIMIT 1 ),0); ";
     }
 
-    public static string setManholeCostPerFootBeyondMinimum()
+    /// <summary>
+    /// Sets the manhole cost per foot if we have a manhole diameter smaller than the minimum provided
+    /// </summary>
+    /// <returns>Query string setting the manhole cost per foot if smaller than minimum provided</returns>
+    public static string SetManholeCostPerFootBeyondMinimum()
     {
       return "UPDATE AMStudio_PipeDetails " +
              "SET    ManholeCostPerFootBeyondMinimum = IFNULL(( " +
@@ -512,7 +532,11 @@ namespace CostEstimatorAddIn
                "WHERE  AMStudio_PipeDetails.ManholeSize <= manholeDiameter ORDER BY manholeDiameter ASC LIMIT 1),0); ";
     }
 
-    public static string setManholeRimFrameCost()
+    /// <summary>
+    /// Sets the manhole rim frame cost
+    /// </summary>
+    /// <returns>Query string setting the manhole rim frame cost</returns>
+    public static string SetManholeRimFrameCost()
     {
       return "UPDATE AMStudio_PipeDetails " +
              "SET    ManholeRimFrameCost = IFNULL(( " +
@@ -521,7 +545,11 @@ namespace CostEstimatorAddIn
                "WHERE  AMStudio_PipeDetails.ManholeSize <= manholeDiameter ORDER BY manholeDiameter ASC LIMIT 1),0); ";
     }
 
-    public static string setManholeDepthFactor()
+    /// <summary>
+    /// Sets the manhole depth factor
+    /// </summary>
+    /// <returns>Query string setting the manhole depth factor</returns>
+    public static string SetManholeDepthFactor()
     {
       return "UPDATE AMStudio_PipeDetails " +
              "SET    ManholeDepthFactor = IFNULL(( " +
@@ -530,7 +558,11 @@ namespace CostEstimatorAddIn
                "WHERE  XPData.ID = AMStudio_PipeDetails.ID AND AMStudio_PipeDetails.ManholeSize >= manholeMinSize ORDER BY manholeMinSize DESC, manholeMinDepth DESC LIMIT 1),0); ";
     }
 
-    public static string setManhole()
+    /// <summary>
+    /// Sets the manhole cost
+    /// </summary>
+    /// <returns>Query string setting the manhole cost</returns>
+    public static string SetManhole()
     {
       return "UPDATE AMStudio_PipeDetails " +
              "SET    Manhole = ( " +
@@ -539,17 +571,23 @@ namespace CostEstimatorAddIn
              "WHERE  XPData.ID = AMStudio_PipeDetails.ID); ";
     }
 
-    public static string setBaseOpenCutRepairTime
-                         (
-                           double workingHoursPerDay,
-                           double excavationDuration,
-                           double paveDuration,
-                           double utilityCrossingDuration
-                         )
+    /// <summary>
+    /// Sets the base open cut repair time
+    /// </summary>
+    /// <param name="workingHoursPerDay">Number of working hours per day</param>
+    /// <param name="excavationDuration">Duration of excavation work in days</param>
+    /// <param name="paveDuration">Duration of pavement replacement work in days</param>
+    /// <param name="utilityCrossingDuration">Duration of working with crossing utility in days</param>
+    /// <returns>Query string setting the base open cut repair time</returns>
+    public static string SetBaseOpenCutRepairTime(
+      double workingHoursPerDay,
+      double excavationDuration,
+      double paveDuration,
+      double utilityCrossingDuration)
     {
       return "UPDATE AMStudio_ConstructionDurations " +
              "SET    baseOpenCutRepairTime = ( " +
-             "SELECT (((((uDepth + dDepth)/2)*TrenchBaseWidth/27.0)/" + excavationDuration.ToString() + ") + (XPData.[length]/" + paveDuration.ToString() + "))*" + workingHoursPerDay.ToString() + " " +//27 cubic feet per cubic yard
+             "SELECT (((((uDepth + dDepth)/2)*TrenchBaseWidth/27.0)/" + excavationDuration.ToString() + ") + (XPData.[length]/" + paveDuration.ToString() + "))*" + workingHoursPerDay.ToString() + " " + // 27 cubic feet per cubic yard
              "FROM   XPData INNER JOIN AMStudio_PipeDetails ON XPData.ID = AMStudio_PipeDetails.ID " +
              "WHERE  XPData.ID = AMStudio_ConstructionDurations.ID); " +
 
@@ -560,48 +598,72 @@ namespace CostEstimatorAddIn
              "WHERE  XPData.ID = AMStudio_ConstructionDurations.ID); ";
     }
 
-    public static string setBasePipeBurstRepairTime(double workingHoursPerDay)
+    /// <summary>
+    /// Sets the base pipe burst repair time
+    /// </summary>
+    /// <param name="workingHoursPerDay">Number of working hours per day</param>
+    /// <returns>Query string setting the base pipe burst repair time</returns>
+    public static string SetBasePipeBurstRepairTime(double workingHoursPerDay)
     {
       return "UPDATE AMStudio_ConstructionDurations " +
              "SET    basePipeBurstRepairTime = " + workingHoursPerDay.ToString() + " WHERE cutno = 0; ";
     }
 
-    public static string setBaseBoreJackRepairTime
-                         (
-                           double smallBoreJackDiameter,
-                           double largeBoreJackDiameter,
-                           double fastBoreRate,
-                           double slowBoreRate,
-                           double workingHoursPerDay,
-                           double boreJackCasingAndGroutingDays
-                         )
+    /// <summary>
+    /// Sets the base boring/jacking repair time
+    /// </summary>
+    /// <param name="smallBoreJackDiameter">The low end of the boring/jacking diameter range</param>
+    /// <param name="largeBoreJackDiameter">The high end of the boring/jacking diameter range</param>
+    /// <param name="fastBoreRate">The fast boring rate in feet per day</param>
+    /// <param name="slowBoreRate">The slow boring rate in feet per day</param>
+    /// <param name="workingHoursPerDay">Number of working hours per day</param>
+    /// <param name="boreJackCasingAndGroutingDays">Number of days for installing casing and grouting </param>
+    /// <returns>Query string setting the base boring/jacking repair time</returns>
+    public static string SetBaseBoreJackRepairTime(
+      double smallBoreJackDiameter,
+      double largeBoreJackDiameter,
+      double fastBoreRate,
+      double slowBoreRate,
+      double workingHoursPerDay,
+      double boreJackCasingAndGroutingDays)
     {
       return "UPDATE AMStudio_ConstructionDurations " +
              "SET    baseBoreJackRepairTime =  ( " +
              "SELECT CASE " +
              "         WHEN  XPData.diamWidth < " + smallBoreJackDiameter.ToString() + " " +
-             "         THEN  XPData.[length]/" + fastBoreRate.ToString() + " + " + boreJackCasingAndGroutingDays.ToString() + " * " + workingHoursPerDay.ToString() + " " +  //1 day to install pipe in casing and 1 day for grouting
+             "         THEN  XPData.[length]/" + fastBoreRate.ToString() + " + " + boreJackCasingAndGroutingDays.ToString() + " * " + workingHoursPerDay.ToString() + " " +  // 1 day to install pipe in casing and 1 day for grouting
              "         WHEN  XPData.diamWidth >= " + smallBoreJackDiameter.ToString() + " AND XPData.diamWidth <= " + largeBoreJackDiameter.ToString() + " " +
-             "         THEN  XPData.[length]/" + slowBoreRate.ToString() + " + " + boreJackCasingAndGroutingDays.ToString() + " * " + workingHoursPerDay.ToString() + " " +  //1 day to install pipe in casing and 1 day for grouting
+             "         THEN  XPData.[length]/" + slowBoreRate.ToString() + " + " + boreJackCasingAndGroutingDays.ToString() + " * " + workingHoursPerDay.ToString() + " " +  // 1 day to install pipe in casing and 1 day for grouting
              "         WHEN  XPData.diamWidth > " + largeBoreJackDiameter.ToString() + " " +
-             "         THEN  XPData.[length]/" + slowBoreRate.ToString() + " " + //at this size, the casing will be the host pipe, so the 2 days is not applicable
+             "         THEN  XPData.[length]/" + slowBoreRate.ToString() + " " + // at this size, the casing will be the host pipe, so the 2 days is not applicable
              "       END " +
              "FROM   XPData INNER JOIN AMStudio_PipeDetails ON XPData.ID = AMStudio_PipeDetails.ID " +
              "WHERE  XPData.ID = AMStudio_ConstructionDurations.ID) WHERE cutno = 0; ";
     }
 
-    public static string setBaseCIPPRepairTime(double workingHoursPerDay, double CIPPRepairDays)
+    /// <summary>
+    /// Sets the base CIPP repair time
+    /// </summary>
+    /// <param name="workingHoursPerDay">Number of working hours per day</param>
+    /// <param name="cippRepairDays">Number of days to install CIPP</param>
+    /// <returns>Query string for setting the base CIPP repair time</returns>
+    public static string SetBaseCippRepairTime(double workingHoursPerDay, double cippRepairDays)
     {
       return "UPDATE AMStudio_ConstructionDurations " +
-             "SET    baseCIPPRepairTime = " + workingHoursPerDay.ToString() + " * " + CIPPRepairDays.ToString() + " WHERE cutno = 0; ";
+             "SET    baseCIPPRepairTime = " + workingHoursPerDay.ToString() + " * " + cippRepairDays.ToString() + " WHERE cutno = 0; ";
     }
 
-    public static string setBaseSPRepairTime
-                         (
-                           double shallowSpotDepthCutoff,
-                           double shallowSpotRepairTime,
-                           double deepSpotRepairTime
-                         )
+    /// <summary>
+    /// Sets the base spot repair time
+    /// </summary>
+    /// <param name="shallowSpotDepthCutoff">The shallow spot depth cutoff in feet</param>
+    /// <param name="shallowSpotRepairTime">The shallow spot repair duration in days</param>
+    /// <param name="deepSpotRepairTime">The deep spot repair duration in days</param>
+    /// <returns>Query string setting the base spot repair time</returns>
+    public static string SetBaseSpotRepairTime(
+      double shallowSpotDepthCutoff,
+      double shallowSpotRepairTime,
+      double deepSpotRepairTime)
     {
       return "UPDATE AMStudio_ConstructionDurations " +
              "SET    baseSPRepairTime =  ( " +
@@ -615,12 +677,17 @@ namespace CostEstimatorAddIn
              "WHERE  XPData.ID = AMStudio_ConstructionDurations.ID) WHERE cutno > 0; ";
     }
 
-    public static string setTrafficControlMobilization
-                         (
-                            double streetTypeStreetTrafficControlMobilization,
-                            double streetTypeArterialTrafficControlMobilization,
-                            double streetTypeMajorArterialTrafficControlMobilization
-                         )
+    /// <summary>
+    /// Sets the traffic control mobilization duration
+    /// </summary>
+    /// <param name="streetTypeStreetTrafficControlMobilization">Street-volume traffic control mobilization in days</param>
+    /// <param name="streetTypeArterialTrafficControlMobilization">Arterial-volume traffic control mobilization in days</param>
+    /// <param name="streetTypeMajorArterialTrafficControlMobilization">Major arterial-volume traffic control mobilization in days</param>
+    /// <returns>Query string setting the traffic control mobilization</returns>
+    public static string SetTrafficControlMobilization(
+      double streetTypeStreetTrafficControlMobilization,
+      double streetTypeArterialTrafficControlMobilization,
+      double streetTypeMajorArterialTrafficControlMobilization)
     {
       return "UPDATE AMStudio_ConstructionDurations " +
              "SET    trafficControl =  ( " +
@@ -643,12 +710,17 @@ namespace CostEstimatorAddIn
              "WHERE  A.compkey = AMStudio_ConstructionDurations.compkey GROUP BY A.compkey) WHERE cutno = 0; ";
     }
 
-    public static string setMainlineBypassMobilization
-                         (
-                           double shallowTrenchDepthCutoff,
-                           double smallMainlineBypassCutoff,
-                           double workingHoursPerDay
-                         )
+    /// <summary>
+    /// Sets the mainline bypass mobilization duration
+    /// </summary>
+    /// <param name="shallowTrenchDepthCutoff">Shallow trench depth cutoff in feet</param>
+    /// <param name="smallMainlineBypassCutoff">Small mainline bypass cutoff diameter in inches</param>
+    /// <param name="workingHoursPerDay">Number of working hours per day</param>
+    /// <returns>Query string setting the mainline bypass mobilization</returns>
+    public static string SetMainlineBypassMobilization(
+      double shallowTrenchDepthCutoff,
+      double smallMainlineBypassCutoff,
+      double workingHoursPerDay)
     {
       return "UPDATE AMStudio_ConstructionDurations " +
              "SET    mainlineBypass =  ( " +
@@ -661,11 +733,15 @@ namespace CostEstimatorAddIn
              "WHERE  XPData.ID = AMStudio_ConstructionDurations.ID); ";
     }
 
-    public static string setManholeReplacement
-                         (
-                           double manholeBuildRate,
-                           double workingHoursPerDay
-                         )
+    /// <summary>
+    /// Sets the manhole replacement cost
+    /// </summary>
+    /// <param name="manholeBuildRate">Manhole build rate in feet per day</param>
+    /// <param name="workingHoursPerDay">Number of working hours per day</param>
+    /// <returns>Query string setting the manhole replacement cost</returns>
+    public static string SetManholeReplacement(
+      double manholeBuildRate,
+      double workingHoursPerDay)
     {
       return "UPDATE AMStudio_ConstructionDurations " +
              "SET    manholeReplacement =  ( " +
@@ -686,20 +762,26 @@ namespace CostEstimatorAddIn
              "WHERE  A.Compkey = AMStudio_ConstructionDurations.Compkey AND A.Cutno = 0) WHERE AMStudio_ConstructionDurations.Cutno = 1; ";
     }
 
-    public static string setLateralBypass
-                         (
-                           double lateralTrenchWidth,
-                           double lateralShoringLength,
-                           double excavationDuration,
-                           double paveDuration
-                         )
+    /// <summary>
+    /// Sets the lateral bypass cost
+    /// </summary>
+    /// <param name="lateralTrenchWidth">Width of the lateral trench in feet</param>
+    /// <param name="lateralShoringLength">Length of the shoring in feet</param>
+    /// <param name="excavationDuration">Rate of volume excavation in cubic feet per day</param>
+    /// <param name="paveDuration">Duration of pavement work in days</param>
+    /// <returns>Query string setting the lateral bypass cost</returns>
+    public static string SetLateralBypass(
+      double lateralTrenchWidth,
+      double lateralShoringLength,
+      double excavationDuration,
+      double paveDuration)
     {
       return "UPDATE AMStudio_ConstructionDurations " +
              "SET    lateralBypass =  ( " +
              "SELECT LateralCount * " +
                     "( " +
                     "  ( " +
-                    "    (" + lateralTrenchWidth.ToString() + "*" + lateralShoringLength.ToString() + "*((uDepth + dDepth)/2.0))/(27.0*" + excavationDuration.ToString() + ") " +//27 cubic feet per cubic yard
+                    "    (" + lateralTrenchWidth.ToString() + "*" + lateralShoringLength.ToString() + "*((uDepth + dDepth)/2.0))/(27.0*" + excavationDuration.ToString() + ") " + // 27 cubic feet per cubic yard
                     "  ) " +
                     "  + " +
                     "  ( " +
@@ -710,48 +792,72 @@ namespace CostEstimatorAddIn
              "WHERE  XPData.ID = AMStudio_ConstructionDurations.ID ); ";
     }
 
-    public static string setBoreJackPitExcavation
-                         (
-                           double boreJackArea,
-                           double excavationDuration
-                         )
+    /// <summary>
+    /// Sets the boring/jacking pit excavation cost
+    /// </summary>
+    /// <param name="boreJackArea">Area in sq ft per ft of pipe to assume for boring/jacking</param>
+    /// <param name="excavationDuration">Rate of volume excavation in cubic feet per day</param>
+    /// <returns>Query string for setting the boring/jacking pit excavation cost</returns>
+    public static string SetBoreJackPitExcavation(
+      double boreJackArea,
+      double excavationDuration)
     {
       return "UPDATE AMStudio_ConstructionDurations " +
              "SET    lateralBypass =  ( " +
              "SELECT boreJackPitExcavation = LateralCount * " +
                     "( " +
-                    "  (" + boreJackArea.ToString() + "*(uDepth+dDepth)/2.0)/(27.0*" + excavationDuration.ToString() + ") " +//27 cubic feet per cubic yard
+                    "  (" + boreJackArea.ToString() + "*(uDepth+dDepth)/2.0)/(27.0*" + excavationDuration.ToString() + ") " + // 27 cubic feet per cubic yard
                     ") " +
              "FROM   XPData  " +
              "WHERE  XPData.ID = AMStudio_ConstructionDurations.ID ); ";
     }
 
-    public static string setocConstructionDuration()
+    /// <summary>
+    /// Sets the open cut construction duration in days
+    /// </summary>
+    /// <returns>Query string for setting the open cut construction duration</returns>
+    public static string SetOpenCutConstructionDuration()
     {
       return "UPDATE AMStudio_ConstructionDurations " +
              "SET    ocConstructionDuration =  IFNULL(baseOpenCutRepairTime,0) + IFNULL(manholeReplacement,0) + IFNULL(trafficControl,0) + IFNULL(mainlineBypass,0) WHERE cutno = 0; ";
     }
 
-    public static string setBJMicroTConstructionDuration()
+    /// <summary>
+    /// Sets the boring/jacking and microtunneling construction duration in days
+    /// </summary>
+    /// <returns>Query string for setting the boring/jacking/microtunneling construction duration</returns>
+    public static string SetBjMicroTConstructionDuration()
     {
       return "UPDATE AMStudio_ConstructionDurations " +
              "SET    BJMicroTConstructionDuration =  IFNULL(baseBoreJackRepairTime,0) + IFNULL(trafficControl,0) + IFNULL(mainlineBypass,0) + IFNULL(lateralBypass,0) + IFNULL(boreJackPitExcavation,0) WHERE cutno = 0; ";
     }
 
-    public static string setcippConstructionDuration()
+    /// <summary>
+    /// Sets the CIPP construction duration in days
+    /// </summary>
+    /// <returns>Query string for setting the CIPP construction duration</returns>
+    public static string SetCippConstructionDuration()
     {
       return "UPDATE AMStudio_ConstructionDurations " +
              "SET    cippConstructionDuration =  IFNULL(baseCIPPRepairTime,0) + IFNULL(baseSPRepairTime,0) + IFNULL(trafficControl,0) + IFNULL(mainlineBypass,0) + IFNULL(lateralBypass,0) WHERE cutno = 0; ";
     }
 
-    public static string setspOnlyConstructionDuration()
+    /// <summary>
+    /// Sets the spot repair construction duration in days
+    /// </summary>
+    /// <returns>Query string for setting the spot repair construction duration</returns>
+    public static string SetSpOnlyConstructionDuration()
     {
       return "UPDATE AMStudio_ConstructionDurations " +
              "SET    spOnlyConstructionDuration =  IFNULL(baseSPRepairTime,0) + IFNULL(trafficControl,0) + IFNULL(mainlineBypass,0); ";
     }
 
-    //remove open cut options from cases where bore/jack is required
-    public static string removeOpenCutOptions(double boreJackDepth)
+    /// <summary>
+    /// remove open cut options from cases where bore/jack is required
+    /// </summary>
+    /// <param name="boreJackDepth">Depth in ft. triggering boring/jacking</param>
+    /// <returns>Query string modifying cases where bore/jack is required</returns>
+    public static string RemoveOpenCutOptions(double boreJackDepth)
     {
       return "UPDATE AMStudio_ConstructionDurations " +
                  "SET    ocConstructionDuration =  IFNULL( " +
@@ -779,8 +885,12 @@ namespace CostEstimatorAddIn
                  "SET    ocConstructionDuration = NULL WHERE ocConstructionDuration = 0; ";
     }
 
-    //remove open cut options from cases where bore/jack is required
-    public static string removeBoreJackOptions(double boreJackDepth)
+    /// <summary>
+    /// Removes bore/jack options from cases where bore/jack is not required
+    /// </summary>
+    /// <param name="boreJackDepth">Depth in ft. triggering boring/jacking</param>
+    /// <returns>Query string modifying cases where bore/jack is not required</returns>
+    public static string RemoveBoreJackOptions(double boreJackDepth)
     {
       return "UPDATE AMStudio_ConstructionDurations " +
                  "SET    baseBoreJackRepairTime =  IFNULL( " +
@@ -811,7 +921,11 @@ namespace CostEstimatorAddIn
                  "SET    baseBoreJackRepairTime = NULL WHERE baseBoreJackRepairTime = 0; ";
     }
 
-    public static string setnonMobilizationConstructionDuration()
+    /// <summary>
+    /// Sets non-mobilization construction duration
+    /// </summary>
+    /// <returns>Query string updating non-mobilization construction duration</returns>
+    public static string SetNonMobilizationConstructionDuration()
     {
       return "UPDATE AMStudio_PipeDetails " +
              "SET    nonMobilizationConstructionDuration = IFNULL(( " +
@@ -820,7 +934,11 @@ namespace CostEstimatorAddIn
                "WHERE  AMStudio_PipeDetails.ID = AMStudio_ConstructionDurations.ID AND AMStudio_ConstructionDurations.cutno = 0),0); ";
     }
 
-    public static string setMobilizationConstructionDuration()
+    /// <summary>
+    /// Sets mobilization construction duration
+    /// </summary>
+    /// <returns>Query string to set mobilization construction duration</returns>
+    public static string SetMobilizationConstructionDuration()
     {
       return "UPDATE AMStudio_PipeDetails " +
              "SET    MobilizationConstructionDuration = IFNULL(( " +
@@ -829,21 +947,27 @@ namespace CostEstimatorAddIn
                "WHERE  AMStudio_PipeDetails.ID = AMStudio_ConstructionDurations.ID AND AMStudio_ConstructionDurations.cutno = 0),0); ";
     }
 
-
-    //bypass pumping rates are in dollars/day, not dollars/hour
-    public static string setBypassPumping
-                         (
-                           double fractionalFlow,
-                           double Kn,
-                           double manningsN,
-                           double assumedSlope,
-                           double workingHoursPerDay
-                         )
+    /// <summary>
+    /// Sets bypass pumping cost
+    /// </summary>
+    /// <param name="fractionalFlow">How much of full flow to assume</param>
+    /// <param name="kn">Factor to modify pipe roughness</param>
+    /// <param name="manningsN">Pipe roughness</param>
+    /// <param name="assumedSlope">Slope to assume for calculating flow</param>
+    /// <param name="workingHoursPerDay">Number of working hours per day</param>
+    /// <returns>Query string to set bypass pumping cost</returns>
+    public static string SetBypassPumping(
+      double fractionalFlow,
+      double kn,
+      double manningsN,
+      double assumedSlope,
+      double workingHoursPerDay)
     {
+      // bypass pumping rates are in dollars/day, not dollars/hour
       return "UPDATE AMStudio_PipeDetails " +
              "SET    BypassFlow = IFNULL(( " +
-               "SELECT CASE WHEN XPData.xPipSlope > 0 THEN (" + fractionalFlow.ToString() + " * " + Kn.ToString() + "/" + manningsN.ToString() + ") * power(IFNULL(diamWidth,0)/(4.0*12.0), 2.0/3.0) * power( XPData.xPipSlope, 0.5) " +
-               "                               ELSE (" + fractionalFlow.ToString() + " * " + Kn.ToString() + "/" + manningsN.ToString() + ") * power(IFNULL(diamWidth,0)/(4.0*12.0), 2.0/3.0) * power( " + assumedSlope.ToString() + ", 0.5) " +
+               "SELECT CASE WHEN XPData.xPipSlope > 0 THEN (" + fractionalFlow.ToString() + " * " + kn.ToString() + "/" + manningsN.ToString() + ") * Power(IFNULL(diamWidth,0)/(4.0*12.0), 2.0/3.0) * Power( XPData.xPipSlope, 0.5) " +
+               "                               ELSE (" + fractionalFlow.ToString() + " * " + kn.ToString() + "/" + manningsN.ToString() + ") * Power(IFNULL(diamWidth,0)/(4.0*12.0), 2.0/3.0) * Power( " + assumedSlope.ToString() + ", 0.5) " +
                "                               END " +
                "FROM   AMStudio_ConstructionDurations " +
                "       INNER JOIN " +
@@ -865,21 +989,26 @@ namespace CostEstimatorAddIn
                "          AND         " +
                "          AMStudio_PipeDetails.ID = AMStudio_CapitalCostsMobilizationRatesAndTimes.ID " +
                "ORDER BY BypassFlowGPM DESC LIMIT 1),0) WHERE ID < 40000000; ";
-
     }
 
-
-    //this value is in dollars/day, but our times are in hours,
-    //so divide by workinghoursperday
-    public static string setTrafficControl
-                         (
-                           double streetTypeStreetTrafficControlCost,
-                           double streetTypeArterialTrafficControlCost,
-                           double streetTypeMajorArterialTrafficControlCost,
-                           double streetTypeFreewayTrafficCost,
-                           double workingHoursPerDay
-                         )
+    /// <summary>
+    /// Sets the traffic control cost
+    /// </summary>
+    /// <param name="streetTypeStreetTrafficControlCost">Cost for street-volume traffic control</param>
+    /// <param name="streetTypeArterialTrafficControlCost">Cost for arterial-volume traffic control</param>
+    /// <param name="streetTypeMajorArterialTrafficControlCost">Cost for major arterial-volume traffic control</param>
+    /// <param name="streetTypeFreewayTrafficCost">Cost for freeway-volume traffic control</param>
+    /// <param name="workingHoursPerDay">Number of working hours per day</param>
+    /// <returns>Query string to set traffic control cost</returns>
+    public static string SetTrafficControl(
+      double streetTypeStreetTrafficControlCost,
+      double streetTypeArterialTrafficControlCost,
+      double streetTypeMajorArterialTrafficControlCost,
+      double streetTypeFreewayTrafficCost,
+      double workingHoursPerDay)
     {
+      // this value is in dollars/day, but our times are in hours,
+      // so divide by workinghoursperday
       return "UPDATE AMStudio_PipeDetails " +
              "SET    trafficControl =  ( " +
              "SELECT CASE " +
@@ -892,11 +1021,9 @@ namespace CostEstimatorAddIn
              "         WHEN  pStrtText like 'S' " +
              "         THEN " + streetTypeStreetTrafficControlCost.ToString() + " " +
              "         ELSE  0 " +
-             "       END * ((CASE WHEN IFNULL(uxCLx,0) <2 THEN 0 ELSE uxCLX - 2 END)/2 + 1) " + //assumes at least 2 streets at every intersection and bases cost on every additional street.
+             "       END * ((CASE WHEN IFNULL(uxCLx,0) <2 THEN 0 ELSE uxCLX - 2 END)/2 + 1) " + // assumes at least 2 streets at every intersection and bases cost on every additional street.
              "FROM   XPData  " +
              "WHERE  XPData.ID = AMStudio_PipeDetails.ID); " +
-
-
 
              "UPDATE AMStudio_PipeDetails " +
              "SET    trafficControl =  IFNULL(trafficControl,0) * " +
@@ -907,20 +1034,23 @@ namespace CostEstimatorAddIn
                "SET     CapitalMobilizationRate = IFNULL(CapitalMobilizationRate,0) + IFNULL(( SELECT trafficControl " +
                "FROM   AMStudio_PipeDetails " +
                "WHERE  AMStudio_PipeDetails.ID = AMStudio_CapitalCostsMobilizationRatesAndTimes.ID ),0) WHERE ID < 40000000; ";
-
-
     }
 
-    public static string setBoringJacking
-                         (
-                           double boringJackingCost,
-                           double baseENR,
-                           double jackingENR
-                         )
+    /// <summary>
+    /// Sets boring and jacking costs
+    /// </summary>
+    /// <param name="boringJackingCost">Cost per foot to conduct boring and jacking</param>
+    /// <param name="baseENR">The base ENR/CCI value</param>
+    /// <param name="jackingENR">The current ENR/CCI value</param>
+    /// <returns>Query string to set boring and jacking costs</returns>
+    public static string SetBoringJacking(
+      double boringJackingCost,
+      double baseENR,
+      double jackingENR)
     {
       return "UPDATE AMStudio_PipeDetails " +
              "SET    boringJacking =  IFNULL(( " +
-             "SELECT " + boringJackingCost.ToString() + " * (" + baseENR.ToString() + " / " + jackingENR.ToString() + ")* power(2.71828, (0.0119*diamWidth)) * [length] " +
+             "SELECT " + boringJackingCost.ToString() + " * (" + baseENR.ToString() + " / " + jackingENR.ToString() + ")* Power(2.71828, (0.0119*diamWidth)) * [length] " +
              "FROM   XPData  " +
              "WHERE  XPData.ID = AMStudio_PipeDetails.ID " +
              "       AND " +
@@ -938,11 +1068,16 @@ namespace CostEstimatorAddIn
              "),0); ";
     }
 
-    public static string setDifficultArea(double difficultAreaFactor)
+    /// <summary>
+    /// Sets the difficult area factor
+    /// </summary>
+    /// <param name="difficultAreaFactor">Difficult area factor</param>
+    /// <returns>Query string to set the difficult area factor</returns>
+    public static string SetDifficultArea(double difficultAreaFactor)
     {
       return "UPDATE AMStudio_PipeDetails " +
              "SET    DifficultArea = IFNULL( (" +
-             "       SELECT power( " + difficultAreaFactor.ToString() + ", " +
+             "       SELECT Power( " + difficultAreaFactor.ToString() + ", " +
              "                    CASE WHEN IFNULL(HardArea,0) > 0 THEN 1 ELSE 0 END + " +
              "                    CASE WHEN IFNULL(pRail, 0) > 0 THEN 1 ELSE 0 END + " +
              "                    CASE WHEN IFNULL(pLRT, 0) > 0 THEN 1 ELSE 0 END + " +
@@ -952,7 +1087,11 @@ namespace CostEstimatorAddIn
              "        WHERE  XPData.ID = AMStudio_PipeDetails.ID),0); ";
     }
 
-    public static string setLaterals()
+    /// <summary>
+    /// Sets the lateral count
+    /// </summary>
+    /// <returns>Query string to set the lateral count</returns>
+    public static string SetLaterals()
     {
       return "UPDATE AMStudio_PipeDetails " +
              "SET    Lateral = IFNULL(( " +
@@ -961,10 +1100,16 @@ namespace CostEstimatorAddIn
              "       WHERE  AMStudio_PipeDetails.ID = XPData.ID),0);";
     }
 
-    public static string DirectConstructionCost(double currentENR, double BaseENR)
+    /// <summary>
+    /// Sets the direct construction cost
+    /// </summary>
+    /// <param name="currentEnr">The current ENR/CCI value</param>
+    /// <param name="baseEnr">The base ENR/CCI value</param>
+    /// <returns>Query string to set the direct construction cost</returns>
+    public static string DirectConstructionCost(double currentEnr, double baseEnr)
     {
       return "UPDATE AMStudio_PipeDetails " +
-             "SET    DirectConstructionCost = (IFNULL(DifficultArea, 1) * (" + currentENR.ToString() + "/" + BaseENR.ToString() + ")) " +
+             "SET    DirectConstructionCost = (IFNULL(DifficultArea, 1) * (" + currentEnr.ToString() + "/" + baseEnr.ToString() + ")) " +
                                              "*" +
                                              "(" +
                                                "IFNULL(TrafficControl,0) " +
@@ -988,7 +1133,7 @@ namespace CostEstimatorAddIn
 
              "UPDATE AMStudio_CapitalCostsMobilizationRatesAndTimes " +
              "SET    CapitalNonMobilization = IFNULL(( " +
-             "                               SELECT (IFNULL(DifficultArea, 1) * (" + currentENR.ToString() + "/" + BaseENR.ToString() + ")) " +
+             "                               SELECT (IFNULL(DifficultArea, 1) * (" + currentEnr.ToString() + "/" + baseEnr.ToString() + ")) " +
                                              "*" +
                                              "(" +
                                                " IFNULL(TrenchShoring, 0) " +
@@ -1016,7 +1161,7 @@ namespace CostEstimatorAddIn
 
              "UPDATE AMStudio_CapitalCostsMobilizationRatesAndTimes " +
              "SET    CapitalMobilizationRate = IFNULL(( " +
-             "                               SELECT (IFNULL(DifficultArea, 1) * (" + currentENR.ToString() + "/" + BaseENR.ToString() + ")) " +
+             "                               SELECT (IFNULL(DifficultArea, 1) * (" + currentEnr.ToString() + "/" + baseEnr.ToString() + ")) " +
                                              "*" +
                                              "CapitalMobilizationRate " +
                                              "FROM AMStudio_PipeDetails " +
@@ -1027,15 +1172,22 @@ namespace CostEstimatorAddIn
              "      AMStudio_CapitalCostsMobilizationRatesAndTimes.Type = 'Dig'; ";
     }
 
-    public static string standardPipeFactorCosts(double generalConditionsFactor, double wasteAllowanceFactor)
+    /// <summary>
+    /// Sets standard pipe factor costs
+    /// </summary>
+    /// <param name="generalConditionsFactor">The fraction by which to increase the cost to account for general conditions</param>
+    /// <param name="wasteAllowanceFactor">The fraction by which to increase the cost to account for waste</param>
+    /// <returns>Query string for setting standard pipe factor costs</returns>
+    public static string StandardPipeFactorCosts(double generalConditionsFactor, double wasteAllowanceFactor)
     {
       return "UPDATE AMStudio_PipeDetails SET StandardPipeFactorCost = DirectConstructionCost * ( 1.0 + " + generalConditionsFactor.ToString() + " + " + wasteAllowanceFactor.ToString() + ") WHERE ID < 40000000;" +
 
           "UPDATE AMStudio_CapitalCostsMobilizationRatesAndTimes " +
              "SET    CapitalNonMobilization = IFNULL(( " +
              "                               SELECT IFNULL(CapitalNonMobilization,0)* (1.0 + " + generalConditionsFactor.ToString() + " + " + wasteAllowanceFactor.ToString() + ") " +
-        //"*" +
-        //"CapitalMobilizationRate " +
+
+        // "*" +
+        // "CapitalMobilizationRate " +
                                              "FROM AMStudio_PipeDetails " +
                                              "WHERE AMStudio_PipeDetails.ID = AMStudio_CapitalCostsMobilizationRatesAndTimes.ID " +
                                              "),0) " +
@@ -1046,25 +1198,31 @@ namespace CostEstimatorAddIn
              "UPDATE AMStudio_CapitalCostsMobilizationRatesAndTimes " +
              "SET    CapitalMobilizationRate = IFNULL(( " +
              "                               SELECT IFNULL(CapitalMobilizationRate,0)* (1.0 + " + generalConditionsFactor.ToString() + " + " + wasteAllowanceFactor.ToString() + ") " +
-        //"*" +
-        //"CapitalMobilizationRate " +
+
+        // "*" +
+        // "CapitalMobilizationRate " +
                                              "FROM AMStudio_PipeDetails " +
                                              "WHERE AMStudio_PipeDetails.ID = AMStudio_CapitalCostsMobilizationRatesAndTimes.ID " +
                                              "),0) " +
              "WHERE AMStudio_CapitalCostsMobilizationRatesAndTimes.ID < 40000000 " +
              "      AND " +
              "      AMStudio_CapitalCostsMobilizationRatesAndTimes.Type = 'Dig'; ";
-
     }
 
-    public static string contingencyCost(double contingencyFactor)
+    /// <summary>
+    /// Sets the contingency factor
+    /// </summary>
+    /// <param name="contingencyFactor">Contingency factor</param>
+    /// <returns>Query string for setting the contingency factor</returns>
+    public static string ContingencyCost(double contingencyFactor)
     {
       return "UPDATE AMStudio_PipeDetails SET ContingencyCost = StandardPipeFactorCost * ( 1.0 + " + contingencyFactor.ToString() + ") WHERE ID < 40000000;" +
           "UPDATE AMStudio_CapitalCostsMobilizationRatesAndTimes " +
              "SET    CapitalNonMobilization = IFNULL(( " +
              "                               SELECT IFNULL(CapitalNonMobilization,0)* (1.0 + " + contingencyFactor.ToString() + ") " +
-        //"*" +
-        //"CapitalMobilizationRate " +
+
+        // "*" +
+        // "CapitalMobilizationRate " +
                                              "FROM AMStudio_PipeDetails " +
                                              "WHERE AMStudio_PipeDetails.ID = AMStudio_CapitalCostsMobilizationRatesAndTimes.ID " +
                                              "),0) " +
@@ -1075,45 +1233,9 @@ namespace CostEstimatorAddIn
              "UPDATE AMStudio_CapitalCostsMobilizationRatesAndTimes " +
              "SET    CapitalMobilizationRate = IFNULL(( " +
              "                               SELECT IFNULL(CapitalMobilizationRate,0)* (1.0 + " + contingencyFactor.ToString() + ") " +
-        //"*" +
-        //"CapitalMobilizationRate " +
-                                             "FROM AMStudio_PipeDetails " +
-                                             "WHERE AMStudio_PipeDetails.ID = AMStudio_CapitalCostsMobilizationRatesAndTimes.ID " +
-                                             "),0) " +
-             "WHERE AMStudio_CapitalCostsMobilizationRatesAndTimes.ID < 40000000 " +
-             "      AND " +
-             "      AMStudio_CapitalCostsMobilizationRatesAndTimes.Type = 'Dig'; ";
-    }
 
-    public static string setCapitalCost
-                         (
-                           double ConstructionManagementInspectionTestingFactor,
-                           double designFactor,
-                           double PublicInvolvementInstrumentationAndControlsEasementEnvironmentalFactor,
-                           double StartupCloseoutFactor
-                         )
-    {
-      return "UPDATE AMStudio_PipeDetails SET CapitalCost = ContingencyCost * (1.0 + " + ConstructionManagementInspectionTestingFactor.ToString() +
-              " + " + designFactor.ToString() + " + " + PublicInvolvementInstrumentationAndControlsEasementEnvironmentalFactor.ToString() + " + " + StartupCloseoutFactor.ToString() + ");" +
-          "UPDATE AMStudio_CapitalCostsMobilizationRatesAndTimes " +
-             "SET    CapitalNonMobilization = IFNULL(( " +
-             "                               SELECT IFNULL(CapitalNonMobilization,0)* (1.0 + " + ConstructionManagementInspectionTestingFactor.ToString() +
-              " + " + designFactor.ToString() + " + " + PublicInvolvementInstrumentationAndControlsEasementEnvironmentalFactor.ToString() + " + " + StartupCloseoutFactor.ToString() + ") " +
-        //"*" +
-        //"CapitalMobilizationRate " +
-                                             "FROM AMStudio_PipeDetails " +
-                                             "WHERE AMStudio_PipeDetails.ID = AMStudio_CapitalCostsMobilizationRatesAndTimes.ID " +
-                                             "),0) " +
-             "WHERE AMStudio_CapitalCostsMobilizationRatesAndTimes.ID < 40000000 " +
-             "      AND " +
-             "      AMStudio_CapitalCostsMobilizationRatesAndTimes.Type = 'Dig'; " +
-
-             "UPDATE AMStudio_CapitalCostsMobilizationRatesAndTimes " +
-             "SET    CapitalMobilizationRate = IFNULL(( " +
-             "                               SELECT IFNULL(CapitalMobilizationRate,0)* (1.0 + " + ConstructionManagementInspectionTestingFactor.ToString() +
-              " + " + designFactor.ToString() + " + " + PublicInvolvementInstrumentationAndControlsEasementEnvironmentalFactor.ToString() + " + " + StartupCloseoutFactor.ToString() + ") " +
-        //"*" +
-        //"CapitalMobilizationRate " +
+        // "*" +
+        // "CapitalMobilizationRate " +
                                              "FROM AMStudio_PipeDetails " +
                                              "WHERE AMStudio_PipeDetails.ID = AMStudio_CapitalCostsMobilizationRatesAndTimes.ID " +
                                              "),0) " +
@@ -1123,15 +1245,60 @@ namespace CostEstimatorAddIn
     }
 
     /// <summary>
-    /// 
+    /// Sets the capital cost
     /// </summary>
-    /// <param name="streetTypeStreetTrafficControlCost"></param>
-    /// <param name="streetTypeArterialTrafficControlCost"></param>
-    /// <param name="streetTypeMajorArterialTrafficControlCost"></param>
-    /// <param name="streetTypeFreewayTrafficCost"></param>
-    /// <param name="daysForWholePipeLinerConstruction"></param>
-    /// <returns></returns>
-    public static string setLinerTrafficControl(
+    /// <param name="constructionManagementInspectionTestingFactor">The fraction by which to increase the cost to account for construction, management, inspection, and testing</param>
+    /// <param name="designFactor">The fraction by which to increase the cost to account for design work</param>
+    /// <param name="publicInvolvementInstrumentationAndControlsEasementEnvironmentalFactor">The fraction by which to increase the cost to account for PI, I and C, easement, and environmental factors</param>
+    /// <param name="startupCloseoutFactor">The fraction by which to increase the cost to account for startup and closeout</param>
+    /// <returns>Query string for the capital cost</returns>
+    public static string SetCapitalCost(
+      double constructionManagementInspectionTestingFactor,
+      double designFactor,
+      double publicInvolvementInstrumentationAndControlsEasementEnvironmentalFactor,
+      double startupCloseoutFactor)
+    {
+      return "UPDATE AMStudio_PipeDetails SET CapitalCost = ContingencyCost * (1.0 + " + constructionManagementInspectionTestingFactor.ToString() +
+              " + " + designFactor.ToString() + " + " + publicInvolvementInstrumentationAndControlsEasementEnvironmentalFactor.ToString() + " + " + startupCloseoutFactor.ToString() + ");" +
+          "UPDATE AMStudio_CapitalCostsMobilizationRatesAndTimes " +
+             "SET    CapitalNonMobilization = IFNULL(( " +
+             "                               SELECT IFNULL(CapitalNonMobilization,0)* (1.0 + " + constructionManagementInspectionTestingFactor.ToString() +
+              " + " + designFactor.ToString() + " + " + publicInvolvementInstrumentationAndControlsEasementEnvironmentalFactor.ToString() + " + " + startupCloseoutFactor.ToString() + ") " +
+
+        // "*" +
+        // "CapitalMobilizationRate " +
+                                             "FROM AMStudio_PipeDetails " +
+                                             "WHERE AMStudio_PipeDetails.ID = AMStudio_CapitalCostsMobilizationRatesAndTimes.ID " +
+                                             "),0) " +
+             "WHERE AMStudio_CapitalCostsMobilizationRatesAndTimes.ID < 40000000 " +
+             "      AND " +
+             "      AMStudio_CapitalCostsMobilizationRatesAndTimes.Type = 'Dig'; " +
+
+             "UPDATE AMStudio_CapitalCostsMobilizationRatesAndTimes " +
+             "SET    CapitalMobilizationRate = IFNULL(( " +
+             "                               SELECT IFNULL(CapitalMobilizationRate,0)* (1.0 + " + constructionManagementInspectionTestingFactor.ToString() +
+              " + " + designFactor.ToString() + " + " + publicInvolvementInstrumentationAndControlsEasementEnvironmentalFactor.ToString() + " + " + startupCloseoutFactor.ToString() + ") " +
+
+        // "*" +
+        // "CapitalMobilizationRate " +
+                                             "FROM AMStudio_PipeDetails " +
+                                             "WHERE AMStudio_PipeDetails.ID = AMStudio_CapitalCostsMobilizationRatesAndTimes.ID " +
+                                             "),0) " +
+             "WHERE AMStudio_CapitalCostsMobilizationRatesAndTimes.ID < 40000000 " +
+             "      AND " +
+             "      AMStudio_CapitalCostsMobilizationRatesAndTimes.Type = 'Dig'; ";
+    }
+
+    /// <summary>
+    /// Sets liner traffic control costs
+    /// </summary>
+    /// <param name="streetTypeStreetTrafficControlCost">Cost for street-volume traffic control</param>
+    /// <param name="streetTypeArterialTrafficControlCost">Cost for arterial-volume traffic control</param>
+    /// <param name="streetTypeMajorArterialTrafficControlCost">Cost for major arterial-volume traffic control</param>
+    /// <param name="streetTypeFreewayTrafficCost">Cost for freeway traffic control</param>
+    /// <param name="daysForWholePipeLinerConstruction">The number of days to line a whole pipe</param>
+    /// <returns>Query string to set the liner traffic control costs</returns>
+    public static string SetLinerTrafficControl(
       double streetTypeStreetTrafficControlCost,
       double streetTypeArterialTrafficControlCost,
       double streetTypeMajorArterialTrafficControlCost,
@@ -1150,7 +1317,7 @@ namespace CostEstimatorAddIn
              "         WHEN  pStrtText like 'S' " +
              "         THEN " + streetTypeStreetTrafficControlCost.ToString() + " " +
              "         ELSE  0 " +
-             "       END * ((CASE WHEN IFNULL(uxCLx,0) <2 THEN 0 ELSE uxCLX - 2 END)/2 + 1) " + //assumes at least 2 streets at every intersection and bases cost on every additional street.
+             "       END * ((CASE WHEN IFNULL(uxCLx,0) <2 THEN 0 ELSE uxCLX - 2 END)/2 + 1) " + // assumes at least 2 streets at every intersection and bases cost on every additional street.
              "FROM   XPData  " +
              "WHERE  XPData.ID = AMStudio_PipeDetails.ID); " +
 
@@ -1158,15 +1325,13 @@ namespace CostEstimatorAddIn
              "SET    linerTrafficControl =  IFNULL(linerTrafficControl,0) * " + daysForWholePipeLinerConstruction.ToString() +
              "       ; ";
     }
+
     /// <summary>
     /// Sets the bypass pumping cost
     /// </summary>
     /// <param name="daysForWholePipeLinerConstruction">The number of days to line a whole pipe</param>
     /// <returns>Query string to set the bypass pumping cost</returns>
-    public static string SetLinerBypassPumping
-                         (
-                           double daysForWholePipeLinerConstruction
-                         )
+    public static string SetLinerBypassPumping(double daysForWholePipeLinerConstruction)
     {
       return "UPDATE AMStudio_PipeDetails " +
                "SET    linerBypassPumping = IFNULL(( SELECT BypassCost * " + daysForWholePipeLinerConstruction.ToString() + " " +
@@ -1178,11 +1343,8 @@ namespace CostEstimatorAddIn
     /// Sets the liner build duration
     /// </summary>
     /// <param name="daysForWholePipeLinerConstruction">The number of days to line a whole pipe</param>
-    /// <returns><Query string to set the liner build duration</returns>
-    public static string SetLinerBuildDuration
-                         (
-                           double daysForWholePipeLinerConstruction
-                         )
+    /// <returns>Query string to set the liner build duration</returns>
+    public static string SetLinerBuildDuration(double daysForWholePipeLinerConstruction)
     {
       return "UPDATE AMStudio_PipeDetails " +
                "SET    SpotLineBuildDuration = " + daysForWholePipeLinerConstruction.ToString() + ";";
@@ -1235,13 +1397,13 @@ namespace CostEstimatorAddIn
     /// <summary>
     /// Sets the liner direct construction cost
     /// </summary>
-    /// <param name="currentENR">The current ENR/CCI value</param>
-    /// <param name="BaseENR">The base ENR/CCI value</param>
+    /// <param name="currentEnr">The current ENR/CCI value</param>
+    /// <param name="baseEnr">The base ENR/CCI value</param>
     /// <returns>The query string to set the liner direct construction cost</returns>
-    public static string LinerDirectConstructionCost(double currentENR, double BaseENR)
+    public static string LinerDirectConstructionCost(double currentEnr, double baseEnr)
     {
       return "UPDATE AMStudio_PipeDetails " +
-             "SET    LinerDirectConstructionCost = (IFNULL(DifficultArea, 1) * (" + currentENR.ToString() + "/" + BaseENR.ToString() + ")) " +
+             "SET    LinerDirectConstructionCost = (IFNULL(DifficultArea, 1) * (" + currentEnr.ToString() + "/" + baseEnr.ToString() + ")) " +
                                              "*" +
                                              "(" +
                                                "IFNULL(LinerTrafficControl,0) " +
@@ -1253,7 +1415,7 @@ namespace CostEstimatorAddIn
 
              "UPDATE AMStudio_CapitalCostsMobilizationRatesAndTimes " +
              "SET    CapitalNonMobilization = IFNULL(( " +
-             "                               SELECT (IFNULL(DifficultArea, 1) * (" + currentENR.ToString() + "/" + BaseENR.ToString() + ")) " +
+             "                               SELECT (IFNULL(DifficultArea, 1) * (" + currentEnr.ToString() + "/" + baseEnr.ToString() + ")) " +
                                              "*" +
                                              "(" +
                                                "IFNULL(LinerTrafficControl,0) " +
@@ -1270,7 +1432,7 @@ namespace CostEstimatorAddIn
 
              "UPDATE AMStudio_CapitalCostsMobilizationRatesAndTimes " +
              "SET    CapitalMobilizationRate = CapitalMobilizationRate * IFNULL(( " +
-             "                               SELECT (IFNULL(DifficultArea, 1) * (" + currentENR.ToString() + "/" + BaseENR.ToString() + "))  " +
+             "                               SELECT (IFNULL(DifficultArea, 1) * (" + currentEnr.ToString() + "/" + baseEnr.ToString() + "))  " +
                                              "FROM AMStudio_PipeDetails " +
                                              "WHERE AMStudio_PipeDetails.ID = AMStudio_CapitalCostsMobilizationRatesAndTimes.ID " +
                                              "),0) " +
@@ -1298,7 +1460,6 @@ namespace CostEstimatorAddIn
              "      AND " +
              "      AMStudio_CapitalCostsMobilizationRatesAndTimes.Type = 'Line'; " +
 
-
              "UPDATE AMStudio_CapitalCostsMobilizationRatesAndTimes " +
              "SET    MobilizationTime = IFNULL([MobilizationTime], 0) * IFNULL((SELECT lateralBypass  " +
              "FROM   AMStudio_CapitalCostsMobilizationRatesAndTimes " +
@@ -1311,7 +1472,6 @@ namespace CostEstimatorAddIn
              "WHERE AMStudio_CapitalCostsMobilizationRatesAndTimes.ID < 40000000 " +
              "      AND " +
              "      AMStudio_CapitalCostsMobilizationRatesAndTimes.Type = 'Line'; " +
-
 
              "UPDATE AMStudio_CapitalCostsMobilizationRatesAndTimes " +
              "SET    MobilizationTime = IFNULL(MobilizationTime,0) + IFNULL((SELECT  + IFNULL(trafficControl, 0) + IFNULL(mainlineBypass, 0) " +
@@ -1379,44 +1539,41 @@ namespace CostEstimatorAddIn
     /// <summary>
     /// Sets the liner cost
     /// </summary>
-    /// <param name="ConstructionManagementInspectionTestingFactor">The fraction used to increase cost to account for construction, management, inspection, and testing</param>
-    /// <param name="DesignFactor">The fraction used to increase cost to account for design work</param>
-    /// <param name="PublicInvolvementInstrumentationAndControlsEasementEnvironmentalFactor">The fraction used to increase cost to account for PI, I and C, Easements, and Environmental factors</param>
-    /// <param name="StartupCloseoutFactor">The fraction used to increase cost to account for startup and closeout</param>
+    /// <param name="constructionManagementInspectionTestingFactor">The fraction used to increase cost to account for construction, management, inspection, and testing</param>
+    /// <param name="designFactor">The fraction used to increase cost to account for design work</param>
+    /// <param name="publicInvolvementInstrumentationAndControlsEasementEnvironmentalFactor">The fraction used to increase cost to account for PI, I and C, Easements, and Environmental factors</param>
+    /// <param name="startupCloseoutFactor">The fraction used to increase cost to account for startup and closeout</param>
     /// <returns>Query string to update liner costs</returns>
-    public static string LinerCapitalCost
-                         (
-                           double ConstructionManagementInspectionTestingFactor,
-                           double DesignFactor,
-                           double PublicInvolvementInstrumentationAndControlsEasementEnvironmentalFactor,
-                           double StartupCloseoutFactor
-
-                         )
+    public static string LinerCapitalCost(
+      double constructionManagementInspectionTestingFactor,
+      double designFactor,
+      double publicInvolvementInstrumentationAndControlsEasementEnvironmentalFactor,
+      double startupCloseoutFactor)
     {
       return "UPDATE AMStudio_PipeDetails " +
              "SET    LinerContingencyCost = LinerStandardPipeFactorCost * (1.0 + "
-             + ConstructionManagementInspectionTestingFactor.ToString() + "+"
-             + DesignFactor.ToString() + "+"
-             + PublicInvolvementInstrumentationAndControlsEasementEnvironmentalFactor.ToString() + "+"
-             + StartupCloseoutFactor.ToString() + ") " +
+             + constructionManagementInspectionTestingFactor.ToString() + "+"
+             + designFactor.ToString() + "+"
+             + publicInvolvementInstrumentationAndControlsEasementEnvironmentalFactor.ToString() + "+"
+             + startupCloseoutFactor.ToString() + ") " +
              "WHERE ID < 40000000; " +
 
              "UPDATE AMStudio_CapitalCostsMobilizationRatesAndTimes " +
              "SET    CapitalNonMobilization = IFNULL(CapitalNonMobilization,0) * (1.0 + "
-             + ConstructionManagementInspectionTestingFactor.ToString() + "+"
-             + DesignFactor.ToString() + "+"
-             + PublicInvolvementInstrumentationAndControlsEasementEnvironmentalFactor.ToString() + "+"
-             + StartupCloseoutFactor.ToString() + ") " +
+             + constructionManagementInspectionTestingFactor.ToString() + "+"
+             + designFactor.ToString() + "+"
+             + publicInvolvementInstrumentationAndControlsEasementEnvironmentalFactor.ToString() + "+"
+             + startupCloseoutFactor.ToString() + ") " +
              "WHERE AMStudio_CapitalCostsMobilizationRatesAndTimes.ID < 40000000 " +
              "      AND " +
              "      AMStudio_CapitalCostsMobilizationRatesAndTimes.Type = 'Line'; " +
 
              "UPDATE AMStudio_CapitalCostsMobilizationRatesAndTimes " +
              "SET    CapitalMobilizationRate = IFNULL(CapitalMobilizationRate,0) * (1.0 + "
-             + ConstructionManagementInspectionTestingFactor.ToString() + "+"
-             + DesignFactor.ToString() + "+"
-             + PublicInvolvementInstrumentationAndControlsEasementEnvironmentalFactor.ToString() + "+"
-             + StartupCloseoutFactor.ToString() + ") " +
+             + constructionManagementInspectionTestingFactor.ToString() + "+"
+             + designFactor.ToString() + "+"
+             + publicInvolvementInstrumentationAndControlsEasementEnvironmentalFactor.ToString() + "+"
+             + startupCloseoutFactor.ToString() + ") " +
              "WHERE AMStudio_CapitalCostsMobilizationRatesAndTimes.ID < 40000000 " +
              "      AND " +
              "      AMStudio_CapitalCostsMobilizationRatesAndTimes.Type = 'Line'; ";
@@ -1428,11 +1585,9 @@ namespace CostEstimatorAddIn
     /// <param name="workingHoursPerDay">The assumed number of working hours per day</param>
     /// <param name="daysForWholePipeLinerConstruction">The assumed number of days assumed to complete a pipe liner job</param>
     /// <returns>Query string to update the base and mobilization times</returns>
-    public static string BaseTimesAndMobilizationTimes
-                         (
-                           double workingHoursPerDay,
-                           double daysForWholePipeLinerConstruction
-                         )
+    public static string BaseTimesAndMobilizationTimes(
+      double workingHoursPerDay,
+      double daysForWholePipeLinerConstruction)
     {
       return "UPDATE AMStudio_CapitalCostsMobilizationRatesAndTimes " +
              "SET    BaseTime =  " + (workingHoursPerDay * daysForWholePipeLinerConstruction).ToString() + " WHERE Type = 'Line';" +

@@ -1,0 +1,83 @@
+<StyleCopSettings Version="105">
+  <GlobalSettings>
+    <BooleanProperty Name="ViolationsAsErrors">True</BooleanProperty>
+    <CollectionProperty Name="RecognizedWords">
+      <Value>baseflow</Value>
+      <Value>baseflows</Value>
+      <Value>cfs</Value>
+      <Value>deployer</Value>
+      <Value>Emgaats</Value>
+      <Value>enum</Value>
+      <Value>esri</Value>
+      <Value>ft</Value>
+      <Value>geodatabase</Value>
+      <Value>geodatabases</Value>
+      <Value>hr</Value>
+      <Value>int</Value>
+      <Value>nullable</Value>
+      <Value>overallocate</Value>
+      <Value>overallocated</Value>
+      <Value>overallocating</Value>
+      <Value>overallocation</Value>
+      <Value>raingage</Value>
+      <Value>raingages</Value>
+      <Value>raingage's</Value>
+      <Value>raingauge</Value>
+      <Value>raingauges</Value>
+      <Value>raingauge's</Value>
+      <Value>rasters</Value>
+      <Value>ruleset</Value>
+      <Value>stackoverflow</Value>
+      <Value>subcatchment</Value>
+      <Value>subcatchments</Value>
+      <Value>subnetwork</Value>
+      <Value>symbology</Value>
+      <Value>symbologies</Value>
+      <Value>Symbology</Value>
+      <Value>timestep</Value>
+      <Value>yd</Value>
+    </CollectionProperty>
+  </GlobalSettings>
+  <Analyzers>
+    <Analyzer AnalyzerId="StyleCop.CSharp.DocumentationRules">
+      <Rules>
+        <Rule Name="FileHeaderMustHaveCopyrightText">
+          <RuleSettings>
+            <BooleanProperty Name="Enabled">False</BooleanProperty>
+          </RuleSettings>
+        </Rule>
+      </Rules>
+      <AnalyzerSettings>
+        <BooleanProperty Name="IgnorePrivates">True</BooleanProperty>
+      </AnalyzerSettings>
+    </Analyzer>
+    <Analyzer AnalyzerId="StyleCop.CSharp.NamingRules">
+      <AnalyzerSettings>
+        <CollectionProperty Name="Hungarian">
+          <Value>a</Value>
+          <Value>an</Value>
+          <Value>db</Value>
+          <Value>ds</Value>
+          <Value>gx</Value>
+          <Value>up</Value>
+          <Value>us</Value>
+          <Value>x</Value>
+          <Value>xp</Value>
+          <Value>xs</Value>
+          <Value>y</Value>
+          <Value>z</Value>
+        </CollectionProperty>
+      </AnalyzerSettings>
+    </Analyzer>
+    <Analyzer AnalyzerId="StyleCop.CSharp.ReadabilityRules">
+      <Rules>
+        <Rule Name="ParameterMustNotSpanMultipleLines">
+          <RuleSettings>
+            <BooleanProperty Name="Enabled">False</BooleanProperty>
+          </RuleSettings>
+        </Rule>
+      </Rules>
+      <AnalyzerSettings />
+    </Analyzer>
+  </Analyzers>
+</StyleCopSettings>

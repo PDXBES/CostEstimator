@@ -119,13 +119,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AmStudioCostEstimatorQueries.cs" />
-    <Compile Include="AMStudio_PIPXP_Queries.cs" />
+    <Compile Include="AMStudioPipeXpQueries.cs" />
     <Compile Include="Config.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Config.esriaddinx</DependentUpon>
     </Compile>
     <Compile Include="CostEstimatorClass.cs" />
-    <Compile Include="PipeXP_Arc.cs" />
+    <Compile Include="PipeXpArc.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SQLiteBasicStrings.cs" />
     <Compile Include="TranslateArcToSQLite.cs" />

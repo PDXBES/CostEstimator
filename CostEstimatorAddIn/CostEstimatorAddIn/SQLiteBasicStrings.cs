@@ -134,7 +134,7 @@ namespace CostEstimatorAddIn
       // this query neglects FRM_DEPTH, TO_DEPTH
       // this query also assumes that all pipes will be circular because I wasn't given any information on how to translate an emgaats shape.
       return "INSERT INTO REHABSegments (Shape, XBJECTID, GLOBALID, hansen_compkey, us_node_id, ds_node_id, seg_us_node_id, seg_ds_node_id, length,    fm,   to_,       cutno, UNITID, UNITTYPE,       COMPTYPE, OWNRSHIP, servstat, FRM_ELEV, TO_ELEV,  ParentLength, PIPESIZE,  PIPEHEIGHT, PIPESHPE, MATERIAL, JOBNO, INSTALL_DATE, tot_segs,    IS_SEGMENT) " +
-             "SELECT                     Shape, link_id,  link_id,  link_id,        '',         '',         us_node_id,       ds_node_id,   length_ft, 0.0,  length_ft, 0,     '',     link_flow_type, 0,        'BES',    'IN',     us_ie_ft, ds_ie_ft, length_ft,    height_in, height_in,  'CIRC',   'CSP',    '',    0.0,            1,           0 " +
+             "SELECT                     Shape, link_id,  dme_global_id,  link_id,        '',         '',         us_node_id,       ds_node_id,   length_ft, 0.0,  length_ft, 0,     '',     link_flow_type, 0,        'BES',    'IN',     us_ie_ft, ds_ie_ft, length_ft,    height_in, height_in,  'CIRC',   'CSP',    '',    0.0,            1,           0 " +
              "FROM   " + linksTableName + ";";
     }
 
